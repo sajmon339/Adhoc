@@ -1,0 +1,15 @@
+###- Zadanie 6. 
+###- Korzystamy ze wzoru 
+###- |A\cup B \cup C| = |A|+|B|+|C| - |A\cap B| - |A\cap C| - |B\cap C| + |A\cap B\cap C|
+###- i mamy 
+###- 18=10+10+|C| -4 - 2 - 2 + |A\cap B\cap C|.
+###- Stąd |C| + |A\cap B\cap C| = 6
+###- Możliwe przypadki dla 
+###- |C| i |A\cap B\cap C|
+###- 
+###- 6  i   0
+###- 5  i   1
+###- 4  i   2
+###- 
+###- |A\cap B\cap C| nie może być większe niż 2 bo jest zawarte w zbiorze |A\cap C|, który ma dwa elementy
+###- Odpowiedź 4 nie może być spełniona.

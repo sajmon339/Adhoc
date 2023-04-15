@@ -1,0 +1,35 @@
+Szymon Mikołajek (Nr albumu: NC075691 Kierunek: WZINiN1) Nr zestawu: 27
+
+###- Zadanie 1.
+A=c(10, 12, 13, 14, 15) ###- Zbiór A jako wektor
+B=c(2, 8, 13, 14) ###- Zbiór B jako wektor
+AminusB = setdiff(A,B) ###- Wynik {12,13,14} - Odpowiedź 1 - Nie poprawna
+BminusA = setdiff(B,A) ###- Wynik {7,8} - Odpowiedź 2 - Nie poprawna
+Ar.symB = setdiff(union(A,B),intersect(A,B)) ### Wynik {12,13,14,7,8} - Odpowiedź 3 - Nie poprawna
+Akar.prodB=sort(levels(interaction(factor(A),factor(B)))) ###- Odpowiedź 4 - Odpowiedź Nie poprawna
+Bkar.prodA=sort(levels(interaction(factor(B),factor(A)))) ###- Odpowiedź 5 Odpowiedź poprawna
+
+###- Zadanie 2.
+### Odpowiedź 1 - 
+
+
+###- Zadanie 3.
+Nk=choose(14,4)  ### n po k (Dla losowania "garścią")
+Nw=Nk*factorial(4) ### n!/(n-k)! = (n po k )* k!  (Dla losowania kolejno)
+### Odpowiedź poprawna 2
+
+###- Zadanie 4. 
+NkR=choose(29+3-1,3-1)
+###- Dla niepustych
+NkE=choose(29-1,3-1)
+### Odpowiedź poprawna 2
+
+###- Zadanie 5. 
+NkR=choose(30+4-1,4-1)
+NkW=choose(30-1,4-1)
+### Odpowiedź poprawna 3
+
+###- Zadanie 6. 
+###- Odpowiedź 4 nie może być spełniona. 
+
+

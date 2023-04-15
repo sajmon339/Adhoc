@@ -1,0 +1,96 @@
+Szymon Mikołajek (Nr albumu: NC075691 Kierunek: WZINiN1) Nr zestawu: 27
+
+###-Punkt 1)
+x=c(2,3,4) ###- jest to zadeklarowanie wektora
+x ###- wynik, czyli postać wektora
+2*x ###- wektor pomnożony przez 2
+sum(2*x) ###- sumowanie współrzędnych
+###-[18]  ###- wynik błędny
+
+###-Punkt 2)
+x=-3:2 ###- utworzenie wektora
+prod(x-3) ###- [720]  ###- wynik błędny
+
+###-Punkt 3)
+x=2*(1:3) ###- liczby parzyste
+sum(2-x) ###- [-6] ###- wynik błędny
+
+###-Punkt 4)
+xi=c(2,3,4)
+xj=c(5,1,4)
+outer(xi,2*xj,'+') ###- wszystkie elementy zapisane w postaci macierzy, 
+                   ###- które należy wymnożyć w wierszach i po wymnożeniu dodać wyniki.
+xx=outer(xi,2*xj,'+') ###- oznaczenie macierzy
+apply(xx,1,prod) ###- wykonanie mnożenia na wierszach
+sum(apply(xx,1,prod)) ###- wynik
+sum(apply(outer(xi,2*xj,'+'),1,prod)) ###- [2203] ###- wynik poprawny
+
+
+###-Punkt 5)
+xi=c(1,4,5)
+xj=c(4,2,3)
+outer(2*xj,-xi,'+')
+prod(apply(outer(2*xj,-xi,'+'),1,sum)) ###- [224] ### Wynik błędny
+
+
+###-Zadanie 2 
+###-Są różne metody transformacji x_10 ----> x_2; skorzystamy ze sprawdzenia transformacji odwrotnej
+### najpierw należy pobrać bibliotekę
+library(binaryLogic)
+### Punkt 1
+as.binary(72) ###[1 0 0 1 0 0 0] - Wynik błędny
+### Punkt 2
+as.binary(82) ###[1 0 1 0 0 1 0] - Wynik błędny
+### Punkt 3
+as.binary(22) ###[1 0 1 1 0] - Wynik błędny
+### Punkt 4
+as.binary(33) ###[1 0 0 0 0 1] - Wynik błędny
+### Punkt 5
+as.binary(55) ###[1 1 0 1 1 1] ###- wynik poprawny
+
+
+###-Zadanie 3
+as.binary(63) ###- [1 1 1 1 1 1]  ###-Odp. 5 jest poprawna
+
+
+###-Zadanie 4
+
+as.hexmode(53) ###- [35] ###-Odp. 5 jest poprawna
+
+###-Zadanie 5
+### Punkt 1
+as.hexmode(53) ### [35] ### Wynik błędny
+### Punkt 2
+as.hexmode(56) ### [38] ### Wynik błędny
+### Punkt 3
+as.hexmode(33) ### [21] ### Wynik poprawny
+### Punkt 4
+as.hexmode(85) ### [55] ### Wynik błędny
+### Punkt 5
+as.hexmode(70) ### [45] ### Wynik błędny
+
+###-Zadanie 6
+### Punkt 1
+as.hexmode(as.numeric(as.binary(c(1,1,1,0,0), logic=TRUE))) ### [1c] ### Wynik błędny
+### Punkt 2
+as.hexmode(as.numeric(as.binary(c(1,0,0,0,0,0), logic=TRUE))) ### [20] ### Wynik poprawny
+### Punkt 3
+as.hexmode(as.numeric(as.binary(c(1,1,0,1,0,1), logic=TRUE))) ### [35] ### Wynik błędny
+### Punkt 4
+as.hexmode(as.numeric(as.binary(c(1,0,0,1,1,0,0), logic=TRUE))) ### [4c] ### Wynik błędny
+### Punkt 5
+as.hexmode(as.numeric(as.binary(c(1,1,1,1,0,1), logic=TRUE))) ### [3d] ### Wynik błędny
+
+
+
+###-Zadanie 7
+
+x1=as.binary(c(1,0,0,1,0,0),logic=TRUE)
+x2=as.binary(c(1,0,0,1,0,1,1),logic=TRUE)
+x3=as.binary(c(1,1,0,0,0,1),logic=TRUE)
+x1+x2+x3 ###- [10100000] ###-Odp. 4 jest poprawna
+
+###-Zadanie 8
+x1=as.binary(c(1,0,0,0,1,0,1),logic=TRUE)
+x2=as.binary(c(1,0,1,0,1,1,0),logic=TRUE)
+x1*x2 ###- [1011100101110] ###-Odp. 5 jest poprawna

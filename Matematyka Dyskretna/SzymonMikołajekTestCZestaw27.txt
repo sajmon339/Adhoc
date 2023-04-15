@@ -1,0 +1,59 @@
+Szymon Mikołajek (Nr albumu: NC075691 Kierunek: WZINiN1) Nr zestawu: 27
+
+Zadanie: 1. Które z poniżej podanych relacji nie są tautologią
+1)[(p =⇒ q) =⇒ (q =⇒ r)] =⇒ [(r =⇒ p) =⇒ (q =⇒ p)] 
+2){[(p ∧ q) =⇒ r] ∧ (p ∨ q =⇒∼ r)} =⇒ (p ∧ q ∧ r)
+3)[(p =⇒ q) ∧ (r =⇒ q) ∧ (s =⇒ q)] =⇒ [(p ∧ r∧ ∼ s) =⇒ q] 
+4)[(p =⇒ q) ∧ (r =⇒ s)] =⇒ (p ∨ r =⇒ q ∨ s)
+5)(p =⇒ q) =⇒ [(p ∧ r) =⇒ q]
+
+1.Jeśli p =⇒ q, to jeśli q =⇒ r, to jeśli r =⇒ p, to q =⇒ p.
+2.Jeśli [(p ∧ q) =⇒ r] ∧ (p ∨ q =⇒∼ r) to nie jest prawdziwe że (p ∧ q ∧ r)
+3.Jeśli p =⇒ q, r =⇒ q i s =⇒ q, to (p ∧ r∧ ∼ s) =⇒ q.
+4.Jeśli p =⇒ q i r =⇒ s, to p ∨ r =⇒ q ∨ s.
+5.Jeśli p =⇒ q, to (p ∧ r) =⇒ q.
+
+poprawna Odpowiedź to 2.
+
+Zadanie: 2.
+Powołując się na indukcję matematyczną pokazać, że jeśli funkcja f : N −→ N spełnia warunek
+f(0) = 3 oraz f(n) = 8f(n−1)−14, n>1
+to f(n)=8^n+2, n>0.
+
+Aby pokazać, że funkcja f(n) = 8^n + 2 dla n > 0, przy użyciu indukcji matematycznej, należy przedstawić dwa twierdzenia:
+
+Twierdzenie podstawowe: Funkcja f(0) = 3 = 8^(0) + 2
+Krok indukcyjny: Jeśli f(k) = 8^k + 2 dla k>0, to f(k+1) = 8f(k) - 14 = 8(8^k + 2) - 14 = 8^(k+1) + 2
+Twierdzenie podstawowe jest już spełnione zgodnie z warunkiem f(0) = 3. W celu udowodnienia Kroku indukcyjnego, należy założyć, że f(k) = 8^k + 2 dla k > 0 i udowodnić, że f(k+1) = 8f(k) - 14 = 8^(k+1) + 2
+
+f(k+1) = 8f(k) - 14 = 8(8^k + 2) - 14 = 8^(k+1) + 2
+
+Tym samym, przez indukcję matematyczną możemy pokazać, że dla każdego n > 0, f(n) = 8^n + 2 spełnia warunek f(0) = 3 oraz f(n) = 8f(n−1)−14, n>1.
+
+
+####
+
+Zadanie: 3.
+Niech funkcja f : N −→ N spełnia warunek
+f(0) = 8 oraz f(n) = f(n−1)+12n+8, n>1
+Wykorzystując rekurencję obliczyć wartości funkcji f (n) dla n = 5, 6, 7, 8, 9, 10. Która z poniżej
+podanych odpowiedzi jest poprawna. 
+1)223 302 393 496 611 738
+2)233 314 407 512 629 758 
+3)238 320 414 520 638 768 
+4)228 308 400 504 620 748 
+5)218 296 386 488 602 728
+
+### Odpowiedź 4 jest poprawna
+
+Możemy to potwierdzić przy użyciu rekurencyjnej definicji funkcji i podstawowego przypadku:
+f(1) = f(0) + 12(1) + 8 = 8 + 12 + 8 = 28
+f(2) = f(1) + 12(2) + 8 = 28 + 24 + 8 = 60
+f(3) = f(2) + 12(3) + 8 = 60 + 36 + 8 = 104
+f(4) = f(3) + 12(4) + 8 = 104 + 48 + 8 = 160
+f(5) = f(4) + 12(5) + 8 = 160 + 60 + 8 = 228
+f(6) = f(5) + 12(6) + 8 = 228 + 72 + 8 = 308
+f(7) = f(6) + 12(7) + 8 = 308 + 84 + 8 = 400
+f(8) = f(7) + 12(8) + 8 = 400 + 96 + 8 = 504
+f(9) = f(8) + 12(9) + 8 = 504 + 108 + 8 = 620
+f(10) = f(9) + 12(10) + 8 = 620 + 120 + 8 = 748

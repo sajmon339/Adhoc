@@ -1,1 +1,15 @@
 sudo docker run --cap-add SYS_PTRACE -e 'ACCEPT_EULA=1' -e 'MSSQL_SA_PASSWORD=G4rg4m3L85!' -p 1433:1433 --name sqledge -d mcr.microsoft.com/azure-sql-edge
+docker run -d --hostname my-rabbit --name local-rabbit rabbitmq:3
+http://my-rabbit:15672/
+
+Artykuł BERGSBO (artykuł nr: 301.604.07) jest niedostępny.
+Artykuł KOMPLEMENT (artykuł nr: 302.568.91) jest niedostępny.
+Artykuł KOMPLEMENT (artykuł nr: 902.463.52) jest niedostępny.
+Gmm&F6kK3vAx6WT$qx
+
+https://www.euro.com.pl/zlewozmywaki/franke-urban-ubg-651-78-czarny-mat.bhtml#opis
+https://primagran.pl/zlewy-kuchenne/zlewozmywak-kuchenny-granitowy-poltorakomorowy-z-ociekaczem-ibiza-780-smart-duo.html#/32-kolor-czarny
+
+KLIENTPRIMA10 
+
+4QZ!#1sI9W9KJisgQu
