@@ -1,0 +1,19 @@
+Grain of data 
+should this be split in different streams - slow/fast moving data
+where does the data is coming from 
+GDPR?
+Customer data retention 
+is there any customer PII data stored/processed 
+PII data storage or customer/client data storage vs local laws
+what if port gets changed after data is already registered produced ?
+does main and mode link ? is there a fk ?
+why different tables for ocean/freight 
+what stores them in Data lake ?
+what is the structure ? - parquet ? files ? can you use lambda ?
+Kimbal Immon 
+star vs snoflake 
+reporting vs analitics tool ?
+how data in dwh will be accessed ?
+    user queries ?
+future proof - avoid tables/column names which are specific to given process (for metadata use key value pair table structures)
+partitioning for writes - should be at the grain of BK ?

@@ -1,0 +1,16 @@
+mieszkanie (x4)
+- drzwi , kontrola dostepu
+- 4 urzadzenia IOT jesli klima to termo
+- router 
+- 3 kompy lub laptopy
+- sieci WIFI zabezpieczenie
+
+Korytarz
+- 4 kamery,
+- router,mmodem (internet)
+- firewall cisco analitics-s  witch
+- UPS 
+-drzwi + kontrola dostepu
+
+192.168.1.0/24 (255.255.255.0)
+
