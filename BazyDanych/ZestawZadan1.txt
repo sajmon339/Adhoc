@@ -1,0 +1,733 @@
+/*Lab1_1.1.sql*/
+USE AdventureWorks2019
+GO
+
+SELECT
+Sum(CASE WHEN LineCount>1 THEN 1 ELSE 0 END) AS MultiLineOrders,
+SUM(CASE WHEN LineCount=1 THEN 1 ELSE 0 END) As SingleLineOrders,
+CAST(SUM(CASE WHEN LineCount=1 THEN 1 ELSE 0 END) AS NUMERIC(21,10))/CAST(COUNT(LineCount) AS NUMERIC(21,10))*100 AS SingleLinePercentage,
+CAST(SUM(CASE WHEN LineCount>1 THEN 1 ELSE 0 END) AS NUMERIC(21,10))/CAST(COUNT(LineCount) AS NUMERIC(21,10))*100 As MultiLinePercentage
+FROM (SELECT SalesOrderNumber,
+             COUNT(*) AS LineCount
+      FROM Sales.SalesOrderHeader OH WITH (NOLOCK)
+               INNER JOIN Sales.SalesOrderDetail OD WITH (NOLOCK) ON OH.SalesOrderID = OD.SalesOrderID
+               LEFT JOIN Sales.Customer CUST on OH.CustomerID = CUST.CustomerID
+               LEFT JOIn Person.Person PERS on CUST.PersonID = PERS.BusinessEntityID
+               LEFT JOIN Sales.Store ST on CUST.StoreID = ST.BusinessEntityID
+               LEFT JOIN Production.Product P on P.ProductID = OD.ProductID
+      GROUP BY SalesOrderNumber
+      )  IQ
+/*Lab1_1.2.sql*/
+USE AdventureWorks2019
+GO
+
+ SELECT
+     I.*,
+     CAST(LineCount AS NUMERIC(21,10))/ CAST(NumberOfOrders as NUMERIC(21,10)) AS AVGLineCount
+FROM (SELECT CONCAT(PERS.FirstName, ' ', PERS.LastName) as CustomerFullName,
+             CUST.CustomerID,
+             COUNT(DISTINCT SalesOrderNumber)           AS NumberOfOrders,
+             COUNT(*)                                   AS LineCount
+      FROM Sales.SalesOrderHeader OH WITH (NOLOCK)
+               INNER JOIN Sales.SalesOrderDetail OD ON OH.SalesOrderID = OD.SalesOrderID
+               INNER JOIN Sales.Customer CUST on OH.CustomerID = CUST.CustomerID
+               INNER JOIN Person.Person PERS on CUST.PersonID = PERS.BusinessEntityID
+               INNER JOIN Sales.Store ST on CUST.StoreID = ST.BusinessEntityID
+               INNER JOIN Production.Product P on P.ProductID = OD.ProductID
+      GROUP BY PERS.FirstName, PERS.LastName, CUST.CustomerID) AS I
+/*Lab1_1.3.sql*/
+USE AdventureWorks2019
+GO
+
+
+WITH QuarterlySales AS (
+    SELECT
+        p.ProductID,
+        p.Name,
+        DATEPART(QUARTER, soh.OrderDate) AS SalesQuarter,
+        SUM(sod.OrderQty) AS TotalSold
+    FROM
+        Sales.SalesOrderHeader soh
+    JOIN
+        Sales.SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+    JOIN
+        Production.Product p ON sod.ProductID = p.ProductID
+    WHERE
+        YEAR(soh.OrderDate) = 2012
+    GROUP BY
+        p.ProductID, p.Name, DATEPART(QUARTER, soh.OrderDate)
+)
+SELECT
+    PivotTable.ProductID,
+    PivotTable.Name,
+    ISNULL([1], 0) AS Q1_2012,
+    ISNULL([2], 0) AS Q2_2012,
+    ISNULL([3], 0) AS Q3_2012,
+    ISNULL([4], 0) AS Q4_2012,
+    ROUND((ISNULL([1], 0) + ISNULL([2], 0) + ISNULL([3], 0) + ISNULL([4], 0)) / 4.0, 2) AS AverageQuarterlySales,
+    pi.Quantity AS CurrentStockLevel,
+    CASE
+        WHEN ROUND((ISNULL([1], 0) + ISNULL([2], 0) + ISNULL([3], 0) + ISNULL([4], 0)) / 4.0, 2) - pi.Quantity > 0
+        THEN ROUND((ISNULL([1], 0) + ISNULL([2], 0) + ISNULL([3], 0) + ISNULL([4], 0)) / 4.0, 2) - pi.Quantity
+        ELSE 0
+    END AS SuggestedReorderQuantity
+FROM
+    (SELECT ProductID, Name, SalesQuarter, TotalSold FROM QuarterlySales) AS SourceTable
+PIVOT
+    (SUM(TotalSold) FOR SalesQuarter IN ([1], [2], [3], [4])) AS PivotTable
+JOIN
+    Production.ProductInventory pi ON PivotTable.ProductID = pi.ProductID
+ORDER BY
+    SuggestedReorderQuantity DESC;
+
+/*Lab1_1.4.sql*/
+USE AdventureWorks2019
+GO
+
+
+SELECT
+    p.FirstName + ' ' + p.LastName AS Osoba,
+    'Pracownik' AS Rola
+FROM
+    Person.Person p
+WHERE
+    EXISTS (
+        SELECT 1
+        FROM HumanResources.Employee e
+        WHERE e.BusinessEntityID = p.BusinessEntityID
+    )
+
+UNION ALL
+
+
+SELECT
+    p.FirstName + ' ' + p.LastName AS Osoba,
+    'Klient' AS Rola
+FROM
+    Person.Person p
+WHERE
+    EXISTS (
+        SELECT 1
+        FROM Sales.Customer c
+        WHERE c.PersonID = p.BusinessEntityID
+    )
+ORDER BY
+    Rola, Osoba;
+
+/*Lab1_2.1.sql*/
+USE AdventureWorks2019
+GO
+
+
+DECLARE @ExistingBusinessEntityID INT;
+
+SELECT TOP 1 @ExistingBusinessEntityID = BusinessEntityID
+FROM Person.BusinessEntity
+WHERE BusinessEntityID NOT IN (SELECT BusinessEntityID FROM Person.Person)
+AND BusinessEntityID NOT IN (SELECT BusinessEntityID FROM HumanResources.Employee);
+
+DECLARE @NID VARCHAR(15)=(SELECT  SUBSTRING(REPLACE(CAST(NEWID() AS VARCHAR(36)), '-', ''), 1, 15))
+
+
+IF @ExistingBusinessEntityID IS NOT NULL
+BEGIN
+
+    INSERT INTO Person.Person (
+        BusinessEntityID,
+        PersonType,
+        NameStyle,
+        Title,
+        FirstName,
+        MiddleName,
+        LastName,
+        Suffix,
+        EmailPromotion,
+        AdditionalContactInfo,
+        Demographics,
+        rowguid,
+        ModifiedDate
+    )
+    VALUES (
+        @ExistingBusinessEntityID, -- Use the existing BusinessEntityID
+        'EM', -- Person type (e.g., 'EM' for employee)
+        0, -- NameStyle (0 or 1)
+        'Mr.',
+        'John',
+        'A.',
+        'Doe',
+        NULL,
+        0,
+        NULL,
+        NULL,
+        NEWID(),
+        GETDATE()
+    );
+
+
+    INSERT INTO HumanResources.Employee (
+        BusinessEntityID,
+        NationalIDNumber,
+        LoginID,
+        OrganizationNode,
+        JobTitle,
+        BirthDate,
+        MaritalStatus,
+        Gender,
+        HireDate,
+        SalariedFlag,
+        VacationHours,
+        SickLeaveHours,
+        CurrentFlag,
+        rowguid,
+        ModifiedDate
+    )
+    VALUES (
+        @ExistingBusinessEntityID,
+        @NID ,
+        CONCAT('adventure-works\',NEWID()),
+        hierarchyid::Parse('/1/1/1/'),
+        'Software Developer',
+        '1985-06-15',
+        'M',
+        'M',
+        GETDATE(),
+        1,
+        10,
+        5,
+        1,
+        NEWID(),
+        GETDATE()
+    );
+
+    SELECT *
+    FROM HumanResources.Employee 
+    WHERE BusinessEntityID = @ExistingBusinessEntityID;
+END
+ELSE
+BEGIN
+    PRINT 'No available BusinessEntityID found to reuse.'
+END;
+
+
+
+
+
+/*Lab1_2.2_2.3_2.4.sql*/
+USE AdventureWorks2019
+GO
+DROP TABLE IF EXISTS  dbo.Pracownicy;
+DROP TYPE IF EXISTS  dbo.PESELType;
+DROP RULE IF EXISTS PESELRule
+GO
+CREATE TYPE dbo.PESELType FROM BIGINT NOT NULL;
+GO
+CREATE TABLE dbo.Pracownicy (
+    ID INT PRIMARY KEY CLUSTERED ,
+    Imie NVARCHAR(50) NOT NULL,
+    Nazwisko NVARCHAR(50) NOT NULL,
+    PESEL dbo.PESELType NOT NULL,
+    DataUrodzenia DATE NOT NULL,
+    DataZapisuDoBazy DATETIME DEFAULT GETDATE()
+);
+GO
+ALTER TABLE dbo.Pracownicy
+ADD CONSTRAINT PES_UQ UNIQUE (PESEL);
+GO
+CREATE RULE PESELRule AS @value LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]';
+GO
+EXEC sp_bindrule 'PESELRule', 'dbo.PESELType'
+GO
+
+INSERT INTO dbo.Pracownicy (Id,Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (10,'Jan', 'Kowalski', 12345678911, '1985-06-15');
+GO
+SELECT * FROM dbo.Pracownicy
+
+
+/*2.4*/
+
+ALTER TABLE dbo.Pracownicy DROP CONSTRAINT  PES_UQ;
+GO
+ALTER TABLE dbo.Pracownicy ALTER COLUMN PESEL BIGINT NOT NULL
+GO
+
+ALTER TABLE dbo.Pracownicy ADD CONSTRAINT PES_UQ UNIQUE (PESEL);
+GO
+ALTER TABLE dbo.Pracownicy
+ADD CONSTRAINT PES_CHK CHECK (
+    LEN(CAST(PESEL AS VARCHAR(11))) = 11 AND
+    PESEL >= 10000000000 AND
+    PESEL <= 99999999999
+);
+
+GO
+INSERT INTO dbo.Pracownicy (Id,Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (20,'Anna', 'Nowak', 12345678901, '1990-03-12');
+
+INSERT INTO dbo.Pracownicy (Id,Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (30,'Piotr', 'Zieliński', 98765432101, '1988-11-22');
+
+
+
+/*Lab1_3.0.sql*/
+USE AdventureWorks2019
+go
+
+CREATE TRIGGER dbo.trg_CheckIDOnInsert
+ON dbo.Pracownicy
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @NewID INT;
+    DECLARE @MaxID INT;
+
+    SELECT @MaxID = ISNULL(MAX(ID), 0) FROM dbo.Pracownicy;
+
+    SELECT @NewID = ID FROM inserted;
+
+    IF @NewID < 10
+    BEGIN
+        UPDATE dbo.Pracownicy SET ID = @MaxID + 1 WHERE ID = @NewID;
+    END;
+END;
+
+
+
+
+
+INSERT INTO dbo.Pracownicy (ID, Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (2, 'Jan', 'Kowalski', 12345678910, '1985-06-15');
+
+
+SELECT * FROM dbo.Pracownicy;
+
+INSERT INTO dbo.Pracownicy (ID, Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (12, 'Anna', 'Nowak', 23456789012, '1990-03-12');
+
+SELECT * FROM dbo.Pracownicy;
+
+INSERT INTO dbo.Pracownicy (ID, Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (3, 'Piotr', 'Zieliński', 34567890123, '1988-11-22');
+
+SELECT * FROM dbo.Pracownicy;
+
+INSERT INTO dbo.Pracownicy (ID, Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (4, 'Maria', 'Wiśniewska', 45678901234, '1992-07-09');
+
+
+
+/*Lab1_3.1.sql*/
+USE AdventureWorks2019
+go
+ALTER TRIGGER trg_CheckIDOnInsert
+ON dbo.Pracownicy
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @NewID INT;
+
+    -- Get the ID from the newly inserted record
+    SELECT @NewID = ID FROM inserted;
+
+    -- Check if the new ID is less than 10
+    IF @NewID < 10
+    BEGIN
+        -- Rollback the transaction and raise an error
+        ROLLBACK TRANSACTION;
+        RAISERROR('Insertion of ID less than 10 is not allowed.', 16, 1);
+    END;
+END;
+
+/*Lab1_3.2.sql*/
+USE AdventureWorks2019
+go
+CREATE TRIGGER dbo.TRG_KontrolaDatyUrodzenia
+ON dbo.Pracownicy
+FOR INSERT
+AS
+BEGIN
+    DECLARE @InsertedDate DATE;
+
+    SELECT @InsertedDate = DataUrodzenia FROM inserted;
+
+    IF @InsertedDate > GETDATE()
+    BEGIN
+        RAISERROR('Nie możesz wprowadzić daty z przyszłości!', 16, 1);
+        ROLLBACK TRANSACTION;
+    END;
+END;
+
+
+
+INSERT INTO dbo.Pracownicy (Id,Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (40,'Jan', 'Kowalski', 95111801111, '2099-01-01');  -- Future date
+
+/*Lab1_3.3.sql*/
+USE AdventureWorks2019
+GO
+DROP TABLE IF EXISTS dbo.Audit_SalesOrderDetail
+GO
+
+CREATE TABLE dbo.Audit_SalesOrderDetail (
+    AuditID INT IDENTITY(1,1) PRIMARY KEY,
+    SalesOrderID INT NOT NULL,
+    SalesOrderDetailID INT NOT NULL,
+    OldUnitPrice DECIMAL(19,4) NOT NULL,
+    NewUnitPrice DECIMAL(19,4) NOT NULL,
+    UpdateDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedBy NVARCHAR(128) NOT NULL
+);
+
+GO
+DROP TRIGGER IF EXISTS dbo.TRG_UpdateSalesOrderDetail
+GO
+
+CREATE TRIGGER Sales.TRG_UpdateSalesOrderDetail
+ON Sales.SalesOrderDetail
+FOR UPDATE
+AS
+BEGIN
+    IF UPDATE(UnitPrice)
+    BEGIN
+        INSERT INTO dbo.Audit_SalesOrderDetail (SalesOrderID, SalesOrderDetailID, OldUnitPrice, NewUnitPrice, UpdateDate, UpdatedBy)
+        SELECT
+            d.SalesOrderID,
+            d.SalesOrderDetailID,
+            d.UnitPrice AS OldUnitPrice,
+            i.UnitPrice AS NewUnitPrice,
+            GETDATE() AS UpdateDate,
+            SYSTEM_USER AS UpdatedBy
+        FROM deleted d
+        JOIN inserted i ON d.SalesOrderDetailID = i.SalesOrderDetailID
+        WHERE d.UnitPrice <> i.UnitPrice;
+    END;
+END
+GO
+
+UPDATE Sales.SalesOrderDetail
+SET UnitPrice = UnitPrice + 10
+WHERE SalesOrderDetailID = 1;
+GO
+
+SELECT * FROM dbo.Audit_SalesOrderDetail;
+
+/*Lab1_4.0.sql*/
+USE AdventureWorks2019
+GO
+
+CREATE FUNCTION [dbo].[udfGetProductsByName]
+(
+    @name NVARCHAR(100)
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT
+        Product.ProductID,
+        Product.Name,
+        Product.ProductNumber
+    FROM
+        Production.Product
+    WHERE
+        Product.Name LIKE '%' + @name + '%'
+);
+
+SELECT *
+FROM [dbo].[udfGetProductsByName]('bike');
+
+
+/*Lab1_4.1.sql*/
+USE AdventureWorks2019
+go
+
+CREATE FUNCTION dbo.AnnualProductStatistics
+(
+    @ProductID INT,
+    @StartDate DATE,
+    @EndDate DATE
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT
+        YEAR(soh.OrderDate) AS Year,
+        COUNT(sod.SalesOrderID) AS OrderCount,
+        COUNT(DISTINCT soh.CustomerID) AS UniqueCustomerCount
+    FROM
+        Sales.SalesOrderDetail sod
+    INNER JOIN
+        Sales.SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+    WHERE
+        sod.ProductID = @ProductID
+        AND soh.OrderDate BETWEEN @StartDate AND @EndDate
+    GROUP BY
+        YEAR(soh.OrderDate)
+)
+GO
+
+SELECT *
+FROM dbo.AnnualProductStatistics(707, '2010-01-01', '2024-01-01');
+
+
+/*Lab1_4.2.sql*/
+USE AdventureWorks2019
+go
+DROP FUNCTION IF EXISTS dbo.GetUniqueCustomerCount
+GO
+
+CREATE FUNCTION dbo.GetUniqueCustomerCount
+(
+    @ProductID INT,
+    @StartDate DATE,
+    @EndDate DATE
+)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @UniqueCustomerCount INT;
+
+    SELECT
+        @UniqueCustomerCount = COUNT(DISTINCT soh.CustomerID)
+    FROM
+        Sales.SalesOrderDetail sod
+    INNER JOIN
+        Sales.SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+    WHERE
+        sod.ProductID = @ProductID
+        AND soh.OrderDate BETWEEN @StartDate AND @EndDate;
+
+    RETURN @UniqueCustomerCount;
+END
+GO
+SELECT dbo.GetUniqueCustomerCount(707, '2010-01-01', '2024-01-01') AS UniqueCustomerCount;
+
+/*Lab1_4.3.sql*/
+USE AdventureWorks2019
+go
+DROP FUNCTION IF EXISTS dbo.GetOrderCount
+GO
+
+CREATE FUNCTION dbo.GetOrderCount
+(
+    @ProductID INT,
+    @StartDate DATE,
+    @EndDate DATE
+)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @OrderCount INT;
+
+    SELECT
+        @OrderCount = COUNT(sod.SalesOrderID)
+    FROM
+        Sales.SalesOrderDetail sod
+    INNER JOIN
+        Sales.SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+    WHERE
+        sod.ProductID = @ProductID
+        AND soh.OrderDate BETWEEN @StartDate AND @EndDate;
+
+    RETURN @OrderCount;
+END
+GO
+
+SELECT dbo.GetOrderCount(707, '2010-01-01', '2024-01-01') AS OrderCount;
+
+/*Lab1_5.1.sql*/
+USE AdventureWorks2019
+GO
+
+
+WITH TotalSales AS (
+    SELECT
+        sod.ProductID,
+        SUM(soh.TotalDue) AS TotalSalesAmount
+    FROM
+        Sales.SalesOrderHeader soh
+    JOIN
+        Sales.SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+    GROUP BY
+        sod.ProductID
+    HAVING
+        SUM(soh.TotalDue) > 1000000
+),
+AverageLineTotal AS (
+    SELECT
+        sod.ProductID,
+        AVG(sod.LineTotal) AS AverageLineValue
+    FROM
+        Sales.SalesOrderDetail sod
+    GROUP BY
+        sod.ProductID
+    HAVING
+        AVG(sod.LineTotal) > 3500
+)
+SELECT
+    p.ProductID,
+    p.Name AS ProductName,
+    ts.TotalSalesAmount AS TotalSales,
+    alt.AverageLineValue AS AverageLineValue
+FROM
+    Production.Product p
+LEFT JOIN
+    TotalSales ts ON p.ProductID = ts.ProductID
+LEFT JOIN
+    AverageLineTotal alt ON p.ProductID = alt.ProductID
+WHERE
+    ts.TotalSalesAmount IS NOT NULL
+    AND alt.AverageLineValue IS NOT NULL;
+
+/*Lab1_5.2.sql*/
+USE AdventureWorks2019
+GO
+
+DROP TABLE IF EXISTS dbo.ProductHierarchy
+GO
+DROP TABLE IF EXISTS dbo.Products
+
+
+CREATE TABLE dbo.Products (
+    ProductID INT PRIMARY KEY,
+    ProductName NVARCHAR(100) NOT NULL
+)
+GO
+CREATE TABLE dbo.ProductHierarchy (
+    ParentProductID INT,
+    ChildProductID INT,
+    FOREIGN KEY (ParentProductID) REFERENCES dbo.Products(ProductID),
+    FOREIGN KEY (ChildProductID) REFERENCES dbo.Products(ProductID)
+)
+GO
+
+INSERT INTO dbo.Products (ProductID, ProductName)
+VALUES
+(1, 'Rower'),
+(2, 'Rama'),
+(3, 'Koło'),
+(4, 'Kierownica'),
+(5, 'Siodełko'),
+(6, 'Zestaw kół');
+
+INSERT INTO dbo.ProductHierarchy (ParentProductID, ChildProductID)
+VALUES
+(1, 2),
+(1, 6),
+(6, 3),
+(1, 4),
+(1, 5);
+
+
+
+go
+
+
+WITH ProductHierarchyCTE AS (
+    SELECT
+        p.ProductID,
+        p.ProductName,
+        NULL AS ParentProductID,
+        0 AS Level
+    FROM
+        dbo.Products p
+    WHERE
+        p.ProductID = 1
+    UNION ALL
+    SELECT
+        p.ProductID,
+        p.ProductName,
+        ph.ParentProductID,
+        cte.Level + 1
+    FROM
+        dbo.Products p
+    INNER JOIN
+        dbo.ProductHierarchy ph ON p.ProductID = ph.ChildProductID
+    INNER JOIN
+        ProductHierarchyCTE cte ON ph.ParentProductID = cte.ProductID
+)
+SELECT
+    ProductID,
+    ProductName,
+    ParentProductID,
+    Level
+FROM
+    ProductHierarchyCTE;
+
+/*Lab1_5.3.sql*/
+USE AdventureWorks2019
+go
+
+TRUNCATE TABLE dbo.ProductHierarchy;
+DELETE FROM dbo.Products;
+
+DECLARE @ProductID INT = 1;
+
+WHILE @ProductID <= 100
+BEGIN
+    INSERT INTO dbo.Products (ProductID, ProductName)
+    VALUES (@ProductID, CONCAT('Product ', @ProductID));
+
+    SET @ProductID = @ProductID + 1;
+END;
+
+
+GO
+
+DECLARE @ParentProductID INT = 1;
+DECLARE @ChildProductID INT = 2;
+
+WHILE @ParentProductID <= 50
+BEGIN
+    IF @ChildProductID <= 100
+    BEGIN
+        INSERT INTO dbo.ProductHierarchy (ParentProductID, ChildProductID)
+        VALUES (@ParentProductID, @ChildProductID);
+
+        SET @ChildProductID = @ChildProductID + 1;
+    END
+    ELSE
+    BEGIN
+        SET @ParentProductID = @ParentProductID + 1;
+        SET @ChildProductID = @ParentProductID + 1;
+    END;
+END;
+
+
+go
+
+WITH ProductHierarchyCTE AS (
+    SELECT
+        p.ProductID,
+        p.ProductName,
+        NULL AS ParentProductID,
+        0 AS Level
+    FROM
+        dbo.Products p
+    WHERE
+        p.ProductID = 1
+    UNION ALL
+    SELECT
+        p.ProductID,
+        p.ProductName,
+        ph.ParentProductID,
+        cte.Level + 1
+    FROM
+        dbo.Products p
+    INNER JOIN
+        dbo.ProductHierarchy ph ON p.ProductID = ph.ChildProductID
+    INNER JOIN
+        ProductHierarchyCTE cte ON ph.ParentProductID = cte.ProductID
+    WHERE
+        cte.Level < 100
+)
+SELECT
+    ProductID,
+    ProductName,
+    ParentProductID,
+    Level
+FROM
+    ProductHierarchyCTE
+OPTION (MAXRECURSION 100);
+

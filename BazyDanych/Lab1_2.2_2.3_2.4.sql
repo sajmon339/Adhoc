@@ -1,0 +1,55 @@
+USE AdventureWorks2019
+GO
+DROP TABLE IF EXISTS  dbo.Pracownicy;
+DROP TYPE IF EXISTS  dbo.PESELType;
+DROP RULE IF EXISTS PESELRule
+GO
+CREATE TYPE dbo.PESELType FROM BIGINT NOT NULL;
+GO
+CREATE TABLE dbo.Pracownicy (
+    ID INT PRIMARY KEY CLUSTERED ,
+    Imie NVARCHAR(50) NOT NULL,
+    Nazwisko NVARCHAR(50) NOT NULL,
+    PESEL dbo.PESELType NOT NULL,
+    DataUrodzenia DATE NOT NULL,
+    DataZapisuDoBazy DATETIME DEFAULT GETDATE()
+);
+GO
+ALTER TABLE dbo.Pracownicy
+ADD CONSTRAINT PES_UQ UNIQUE (PESEL);
+GO
+CREATE RULE PESELRule AS @value LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]';
+GO
+EXEC sp_bindrule 'PESELRule', 'dbo.PESELType'
+GO
+
+INSERT INTO dbo.Pracownicy (Id,Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (10,'Jan', 'Kowalski', 12345678911, '1985-06-15');
+GO
+SELECT * FROM dbo.Pracownicy
+
+
+/*2.4*/
+
+ALTER TABLE dbo.Pracownicy DROP CONSTRAINT  PES_UQ;
+GO
+ALTER TABLE dbo.Pracownicy ALTER COLUMN PESEL BIGINT NOT NULL
+GO
+
+ALTER TABLE dbo.Pracownicy ADD CONSTRAINT PES_UQ UNIQUE (PESEL);
+GO
+ALTER TABLE dbo.Pracownicy
+ADD CONSTRAINT PES_CHK CHECK (
+    LEN(CAST(PESEL AS VARCHAR(11))) = 11 AND
+    PESEL >= 10000000000 AND
+    PESEL <= 99999999999
+);
+
+GO
+INSERT INTO dbo.Pracownicy (Id,Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (20,'Anna', 'Nowak', 12345678901, '1990-03-12');
+
+INSERT INTO dbo.Pracownicy (Id,Imie, Nazwisko, PESEL, DataUrodzenia)
+VALUES (30,'Piotr', 'Zieliński', 98765432101, '1988-11-22');
+
+

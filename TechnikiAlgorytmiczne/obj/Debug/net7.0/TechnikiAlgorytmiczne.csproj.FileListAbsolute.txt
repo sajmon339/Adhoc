@@ -1,0 +1,15 @@
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/bin/Debug/net7.0/TechnikiAlgorytmiczne
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/bin/Debug/net7.0/TechnikiAlgorytmiczne.deps.json
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/bin/Debug/net7.0/TechnikiAlgorytmiczne.runtimeconfig.json
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/bin/Debug/net7.0/TechnikiAlgorytmiczne.dll
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/bin/Debug/net7.0/TechnikiAlgorytmiczne.pdb
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/obj/Debug/net7.0/TechnikiAlgorytmiczne.csproj.AssemblyReference.cache
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/obj/Debug/net7.0/TechnikiAlgorytmiczne.GeneratedMSBuildEditorConfig.editorconfig
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/obj/Debug/net7.0/TechnikiAlgorytmiczne.AssemblyInfoInputs.cache
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/obj/Debug/net7.0/TechnikiAlgorytmiczne.AssemblyInfo.cs
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/obj/Debug/net7.0/TechnikiAlgorytmiczne.csproj.CoreCompileInputs.cache
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/obj/Debug/net7.0/TechnikiAlgorytmiczne.dll
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/obj/Debug/net7.0/refint/TechnikiAlgorytmiczne.dll
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/obj/Debug/net7.0/TechnikiAlgorytmiczne.pdb
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/obj/Debug/net7.0/TechnikiAlgorytmiczne.genruntimeconfig.cache
+/Users/simonmikolajek/Repos/Adhoc/TechnikiAlgorytmiczne/obj/Debug/net7.0/ref/TechnikiAlgorytmiczne.dll
