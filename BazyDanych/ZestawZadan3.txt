@@ -1,0 +1,231 @@
+/*Lab2_1.1.sql*/
+Use AdventureWorks2019
+go
+
+CREATE TABLE #ParentTable (
+    ParentID INT PRIMARY KEY,
+    ParentName NVARCHAR(50) NOT NULL
+);
+
+CREATE TABLE #ChildTable (
+    ChildID INT PRIMARY KEY,
+    ParentID INT NOT NULL,
+    ChildName NVARCHAR(50) NOT NULL
+);
+
+ALTER TABLE #ChildTable
+ADD CONSTRAINT FK_ChildTable_ParentTable FOREIGN KEY (ParentID)
+REFERENCES #ParentTable (ParentID);
+
+INSERT INTO #ParentTable (ParentID, ParentName)
+VALUES (1, 'Elektronika'), (2, 'Meble'), (3, 'Odzież');
+
+INSERT INTO #ChildTable (ChildID, ParentID, ChildName)
+VALUES
+    (1, 1, 'Smartfon'),
+    (2, 1, 'Laptop'),
+    (3, 2, 'Stół'),
+    (4, 3, 'T-shirt');
+
+SELECT
+    p.ParentName AS Category,
+    c.ChildName AS Product
+FROM
+    #ParentTable p
+INNER JOIN
+    #ChildTable c
+ON
+    p.ParentID = c.ParentID;
+
+/*Lab2_1.2.sql*/
+Use AdventureWorks2019
+go
+
+SELECT TOP 5
+    p.Name AS ProductName,
+    SUM(sod.OrderQty) AS TotalQuantitySold
+INTO #TopProducts2014
+FROM Sales.SalesOrderDetail sod
+JOIN Sales.SalesOrderHeader soh
+    ON sod.SalesOrderID = soh.SalesOrderID
+JOIN Production.Product p
+    ON sod.ProductID = p.ProductID
+WHERE YEAR(soh.OrderDate) = 2014
+GROUP BY p.Name
+ORDER BY TotalQuantitySold DESC;
+
+SELECT * FROM #TopProducts2014;
+
+/*Lab2_1.3.sql*/
+Use AdventureWorks2019
+go
+
+SELECT *
+FROM Sales.SalesOrderDetail sod
+WHERE sod.ProductID IN (
+    SELECT p.ProductID
+    FROM Production.Product p
+    JOIN #TopProducts2014 tp
+        ON p.Name = tp.ProductName
+);
+
+/*Lab2_2.1.sql*/
+Use AdventureWorks2019
+go
+DECLARE @zmienna_tabelaryczna TABLE (
+    ID INT,
+    Name NVARCHAR(50)
+);
+
+DECLARE @zmienna_skalarna INT;
+
+INSERT INTO @zmienna_tabelaryczna (ID, Name)
+VALUES
+    (1, 'Rekord1'),
+    (2, 'Rekord2'),
+    (3, 'Rekord3');
+
+SET @zmienna_skalarna = (SELECT COUNT(*) FROM @zmienna_tabelaryczna);
+
+IF @zmienna_skalarna > 2
+BEGIN
+    PRINT 'Liczba rekordów jest większa niż 2.';
+END
+ELSE
+BEGIN
+    PRINT 'Liczba rekordów jest mniejsza lub równa 2.';
+END;
+GO
+
+CREATE PROCEDURE dbo.SprawdzZmienna
+AS
+BEGIN
+    DECLARE @zmienna_tabelaryczna TABLE (
+        ID INT,
+        Name NVARCHAR(50)
+    );
+
+    DECLARE @zmienna_skalarna INT;
+
+    INSERT INTO @zmienna_tabelaryczna (ID, Name)
+    VALUES
+        (1, 'Rekord1'),
+        (2, 'Rekord2'),
+        (3, 'Rekord3');
+
+    SET @zmienna_skalarna = (SELECT COUNT(*) FROM @zmienna_tabelaryczna);
+
+    IF @zmienna_skalarna > 2
+    BEGIN
+        PRINT 'Liczba rekordów jest większa niż 2.';
+    END
+    ELSE
+    BEGIN
+        PRINT 'Liczba rekordów jest mniejsza lub równa 2.';
+    END;
+END;
+GO
+EXEC dbo.SprawdzZmienna;
+
+/*Lab2_3.1.sql*/
+USE AdventureWorks2019
+go
+
+WITH SalesByQuarter AS (
+    SELECT
+        YEAR(soh.OrderDate) AS Year,
+        DATEPART(QUARTER, soh.OrderDate) AS Quarter,
+        SUM(sod.LineTotal) AS TotalSales
+    FROM Sales.SalesOrderHeader soh
+    JOIN Sales.SalesOrderDetail sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+    GROUP BY YEAR(soh.OrderDate), DATEPART(QUARTER, soh.OrderDate)
+)
+SELECT
+    Year,
+    [1] AS Q1,
+    [2] AS Q2,
+    [3] AS Q3,
+    [4] AS Q4
+FROM SalesByQuarter
+PIVOT (
+    SUM(TotalSales) FOR Quarter IN ([1], [2], [3], [4])
+) AS PivotTable
+ORDER BY Year;
+
+/*Lab2_3.2.sql*/
+USE AdventureWorks2019
+go
+WITH SalesByMonth AS (
+    SELECT
+        MONTH(soh.OrderDate) AS Month,
+        YEAR(soh.OrderDate) AS Year,
+        SUM(sod.LineTotal) AS TotalSales
+    FROM Sales.SalesOrderHeader soh
+    JOIN Sales.SalesOrderDetail sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+    GROUP BY MONTH(soh.OrderDate), YEAR(soh.OrderDate)
+)
+SELECT
+    Month,
+    [2011] AS Y2011,
+    [2012] AS Y2012,
+    [2013] AS Y2013,
+    [2014] AS Y2014
+FROM SalesByMonth
+PIVOT (
+    SUM(TotalSales) FOR Year IN ([2011], [2012], [2013], [2014])
+) AS PivotTable
+ORDER BY Month;
+
+/*Lab2_3.3.sql*/
+USE AdventureWorks2019
+go
+WITH SalesByMonth AS (
+    SELECT
+        MONTH(soh.OrderDate) AS Month,
+        YEAR(soh.OrderDate) AS Year,
+        SUM(sod.LineTotal) AS TotalSales
+    FROM Sales.SalesOrderHeader soh
+    JOIN Sales.SalesOrderDetail sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+    GROUP BY MONTH(soh.OrderDate), YEAR(soh.OrderDate)
+)
+SELECT
+    Month,
+    ISNULL([2011], 0) AS Y2011,
+    ISNULL([2012], 0) AS Y2012,
+    ISNULL([2013], 0) AS Y2013,
+    ISNULL([2014], 0) AS Y2014
+FROM SalesByMonth
+PIVOT (
+    SUM(TotalSales) FOR Year IN ([2011], [2012], [2013], [2014])
+) AS PivotTable
+ORDER BY Month;
+
+/*Lab2_4.1.sql*/
+SELECT
+    p.ProductID AS [@ProductId],
+    p.Name AS [ProductName],
+    p.ProductNumber AS [ProductNumber],
+    p.StandardCost AS [StandardCost],
+    p.ListPrice AS [ListPrice],
+    ISNULL(pc.Name, 'brak') AS [Kategoryzacja.CategoryName],
+    ISNULL(psc.Name, 'brak') AS [Kategoryzacja.SubcategoryName],
+    CASE WHEN EXISTS (
+        SELECT 1
+        FROM Sales.SalesOrderDetail sod
+        WHERE sod.ProductID = p.ProductID
+    ) THEN 'TAK' ELSE 'NIE' END AS [DaneSprzedazowe.CzyAktywny],
+    ISNULL(
+        (SELECT COUNT(*)
+         FROM Sales.SalesOrderDetail sod
+         WHERE sod.ProductID = p.ProductID), 0
+    ) AS [DaneSprzedazowe.IleRazyZamowiony]
+FROM Production.Product p
+LEFT JOIN Production.ProductSubcategory psc
+    ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+LEFT JOIN Production.ProductCategory pc
+    ON psc.ProductCategoryID = pc.ProductCategoryID
+FOR XML PATH('Produkt'), ROOT('BazaProduktowa');
+
