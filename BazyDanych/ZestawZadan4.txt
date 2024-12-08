@@ -1,0 +1,326 @@
+/*Lab3_1.1.sql*/
+WITH ProductSales AS (
+    SELECT
+        sod.SalesOrderID,
+        sod.ProductID,
+        p.Name AS ProdName,
+        sod.OrderQty,
+        sod.LineTotal,
+        AVG(sod.UnitPrice) OVER (PARTITION BY sod.ProductID) AS ŚredniaCena,
+        SUM(sod.LineTotal) OVER (PARTITION BY sod.ProductID) AS WartośćPerProdukt,
+        COUNT(*) OVER (PARTITION BY sod.ProductID) AS LiczbaLiniiPerProdukt
+    FROM Sales.SalesOrderDetail sod
+    INNER JOIN Production.Product p
+        ON sod.ProductID = p.ProductID
+)
+SELECT *
+FROM ProductSales
+WHERE LiczbaLiniiPerProdukt > 1000
+  AND ŚredniaCena < 20;
+
+/*Lab3_1.2.sql*/
+WITH ProductFirstOrder AS (
+    SELECT
+        sod.SalesOrderID,
+        sod.ProductID,
+        p.Name AS ProdName,
+        sod.OrderQty,
+        sod.LineTotal,
+        soh.OrderDate,
+        ROW_NUMBER() OVER (PARTITION BY sod.ProductID ORDER BY soh.OrderDate ASC) AS Lp
+    FROM Sales.SalesOrderDetail sod
+    INNER JOIN Production.Product p
+        ON sod.ProductID = p.ProductID
+    INNER JOIN Sales.SalesOrderHeader soh
+        ON sod.SalesOrderID = soh.SalesOrderID
+)
+SELECT
+    SalesOrderID,
+    ProductID,
+    ProdName,
+    OrderQty,
+    LineTotal,
+    OrderDate,
+    Lp
+FROM ProductFirstOrder
+WHERE Lp = 1;
+
+/*Lab3_1.3.sql*/
+WITH RankedOrders AS (
+    SELECT
+        YEAR(soh.OrderDate) AS Rok,
+        soh.SalesOrderID,
+        soh.TotalDue,
+        soh.CustomerID,
+        s.Name AS StoreName, -- Fetch store name from the correct table
+        RANK() OVER (PARTITION BY YEAR(soh.OrderDate) ORDER BY soh.TotalDue DESC) AS PozycjaRankingowa
+    FROM Sales.SalesOrderHeader soh
+    LEFT JOIN Sales.Customer c
+        ON soh.CustomerID = c.CustomerID
+    LEFT JOIN Sales.Store s
+        ON c.StoreID = s.BusinessEntityID
+)
+SELECT
+    Rok,
+    SalesOrderID,
+    TotalDue,
+    CustomerID,
+    StoreName,
+    PozycjaRankingowa
+FROM RankedOrders
+WHERE PozycjaRankingowa <= 3
+ORDER BY Rok, PozycjaRankingowa;
+
+/*Lab3_1.4.sql*/
+WITH RankedOrders AS (
+    SELECT
+        YEAR(soh.OrderDate) AS Rok,
+        MONTH(soh.OrderDate) AS Miesiąc,
+        soh.SalesOrderID,
+        soh.TotalDue,
+        soh.CustomerID,
+        s.Name AS StoreName,
+        RANK() OVER (
+            PARTITION BY YEAR(soh.OrderDate), MONTH(soh.OrderDate)
+            ORDER BY soh.TotalDue DESC
+        ) AS PozycjaRankingowa
+    FROM Sales.SalesOrderHeader soh
+    LEFT JOIN Sales.Customer c
+        ON soh.CustomerID = c.CustomerID
+    LEFT JOIN Sales.Store s
+        ON c.StoreID = s.BusinessEntityID
+    WHERE soh.TotalDue > 130000
+)
+SELECT
+    Rok,
+    Miesiąc,
+    SalesOrderID,
+    TotalDue,
+    CustomerID,
+    StoreName,
+    PozycjaRankingowa
+FROM RankedOrders
+WHERE PozycjaRankingowa <= 3
+ORDER BY Rok, Miesiąc, PozycjaRankingowa;
+
+/*Lab3_1.5.sql*/
+WITH EmployeeRanks AS (
+    SELECT
+        edh.DepartmentID,
+        d.Name AS Department,
+        edh.BusinessEntityID AS IDPracownika,
+        edh.StartDate AS HireDate,
+        RANK() OVER (PARTITION BY edh.DepartmentID ORDER BY edh.StartDate ASC) AS RankByHireDate,
+        DENSE_RANK() OVER (PARTITION BY edh.DepartmentID ORDER BY edh.StartDate ASC) AS DenseRankByHireDate
+    FROM HumanResources.EmployeeDepartmentHistory edh
+    INNER JOIN HumanResources.Department d
+        ON edh.DepartmentID = d.DepartmentID
+    WHERE edh.EndDate IS NULL )
+SELECT
+    DepartmentID,
+    Department,
+    IDPracownika,
+    HireDate,
+    RankByHireDate,
+    DenseRankByHireDate
+FROM EmployeeRanks
+WHERE RankByHireDate = DenseRankByHireDate
+ORDER BY DepartmentID, RankByHireDate;
+
+/*Lab3_1.6.sql*/
+WITH ProductRanks AS (
+    SELECT
+        pc.ProductCategoryID,
+        pc.Name AS CategoryName,
+        p.ProductID,
+        p.Name AS ProductName,
+        p.ListPrice,
+        RANK() OVER (PARTITION BY pc.ProductCategoryID ORDER BY p.ListPrice DESC) AS RankByListPrice,
+        DENSE_RANK() OVER (PARTITION BY pc.ProductCategoryID ORDER BY p.ListPrice DESC) AS DenseRankByListPrice
+    FROM Production.Product p
+    INNER JOIN Production.ProductSubcategory ps
+        ON p.ProductSubcategoryID = ps.ProductSubcategoryID
+    INNER JOIN Production.ProductCategory pc
+        ON ps.ProductCategoryID = pc.ProductCategoryID
+)
+SELECT
+    ProductCategoryID,
+    CategoryName,
+    ProductID,
+    ProductName,
+    ListPrice,
+    RankByListPrice,
+    DenseRankByListPrice
+FROM ProductRanks
+WHERE RankByListPrice <> DenseRankByListPrice
+ORDER BY ProductCategoryID, RankByListPrice;
+
+/*Lab3_2.1.sql*/
+DROP TABLE IF EXISTS #BestProducts
+GO
+
+CREATE TABLE #BestProducts (
+    IDProduktu INT PRIMARY KEY,
+    Nazwa VARCHAR(20),
+    Ilosc INT,
+    Wartosc DECIMAL(10, 2)
+);
+
+
+DECLARE @ProductID INT, @ProdName VARCHAR(20), @Ilosc2012 INT, @Wartosc2012 DECIMAL(10, 2);
+
+DECLARE ProductCursor CURSOR FOR
+SELECT
+    p.ProductID,
+    p.Name AS ProdName,
+    SUM(sod.OrderQty) AS Ilosc2012,
+    SUM(sod.LineTotal) AS Wartosc2012
+FROM Sales.SalesOrderDetail sod
+INNER JOIN Sales.SalesOrderHeader soh
+    ON sod.SalesOrderID = soh.SalesOrderID
+INNER JOIN Production.Product p
+    ON sod.ProductID = p.ProductID
+WHERE YEAR(soh.OrderDate) = 2012
+GROUP BY p.ProductID, p.Name;
+
+OPEN ProductCursor;
+
+FETCH NEXT FROM ProductCursor INTO @ProductID, @ProdName, @Ilosc2012, @Wartosc2012;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    IF @Ilosc2012 > 100
+    BEGIN
+        INSERT INTO #BestProducts (IDProduktu, Nazwa, Ilosc, Wartosc)
+        VALUES (@ProductID, @ProdName, @Ilosc2012, @Wartosc2012);
+    END;
+
+    FETCH NEXT FROM ProductCursor INTO @ProductID, @ProdName, @Ilosc2012, @Wartosc2012;
+END;
+
+CLOSE ProductCursor;
+DEALLOCATE ProductCursor;
+
+-- Query the final result
+SELECT * FROM #BestProducts;
+
+/*Lab3_3.1.sql*/
+SELECT
+    ORDERHEAD.SalesOrderID,
+    PROD.ProductID,
+    PROD.Name AS ProdName,
+    PROD.ProductNumber,
+    ORDDET.OrderQty,
+    ORDDET.UnitPrice,
+    ORDDET.UnitPriceDiscount,
+    ORDDET.LineTotal
+FROM Sales.SalesOrderHeader ORDERHEAD
+CROSS APPLY (
+    SELECT
+        ORDD.ProductID,
+        ORDD.OrderQty,
+        ORDD.UnitPrice,
+        ORDD.UnitPriceDiscount,
+        ORDD.LineTotal
+    FROM Sales.SalesOrderDetail ORDD
+    WHERE ORDD.SalesOrderID = ORDERHEAD.SalesOrderID
+      AND ORDD.OrderQty > 10
+) AS ORDDET
+INNER JOIN Production.Product PROD
+    ON ORDDET.ProductID = PROD.ProductID
+WHERE ORDERHEAD.OrderDate > '2014-01-01';
+
+/*Lab3_3.2.sql*/
+SELECT
+    c.CustomerID,
+    od.SalesOrderID,
+    od.ProductID,
+    od.UnitPrice
+FROM Sales.Customer c
+CROSS APPLY (
+    SELECT TOP 1
+        soh.SalesOrderID,
+        sod.ProductID,
+        sod.UnitPrice
+    FROM Sales.SalesOrderHeader soh
+    INNER JOIN Sales.SalesOrderDetail sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+    WHERE soh.CustomerID = c.CustomerID
+    ORDER BY sod.UnitPrice DESC
+) AS od
+WHERE EXISTS (
+    SELECT 1
+    FROM Sales.SalesOrderHeader soh
+    WHERE soh.CustomerID = c.CustomerID
+);
+
+/*Lab3_3.3.sql*/
+WITH RankedOrders AS (
+    SELECT
+        soh.CustomerID,
+        soh.SalesOrderID,
+        sod.ProductID,
+        sod.UnitPrice,
+        ROW_NUMBER() OVER (
+            PARTITION BY soh.CustomerID
+            ORDER BY sod.UnitPrice DESC
+        ) AS RowNum
+    FROM Sales.SalesOrderHeader soh
+    INNER JOIN Sales.SalesOrderDetail sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+)
+SELECT
+    CustomerID,
+    SalesOrderID,
+    ProductID,
+    UnitPrice
+FROM RankedOrders
+WHERE RowNum = 1;
+
+/*Lab3_4.1.sql*/
+DROP TABLE IF EXISTS  #CustomerSummary
+
+GO
+
+
+CREATE TABLE #CustomerSummary (
+    CustomerID INT PRIMARY KEY,
+    OrderCount2012 INT,
+    TotalSales2012 DECIMAL(18, 2),
+    OrderCount2013 INT,
+    TotalSales2013 DECIMAL(18, 2)
+);
+
+
+INSERT INTO #CustomerSummary (CustomerID, OrderCount2012, TotalSales2012)
+SELECT
+    soh.CustomerID,
+    COUNT(*) AS OrderCount2012,
+    SUM(soh.TotalDue) AS TotalSales2012
+FROM Sales.SalesOrderHeader soh
+WHERE YEAR(soh.OrderDate) = 2012
+GROUP BY soh.CustomerID;
+
+
+MERGE INTO #CustomerSummary AS Target
+USING (
+    SELECT
+        soh.CustomerID,
+        COUNT(*) AS OrderCount2013,
+        SUM(soh.TotalDue) AS TotalSales2013
+    FROM Sales.SalesOrderHeader soh
+    WHERE YEAR(soh.OrderDate) = 2013
+    GROUP BY soh.CustomerID
+) AS Source
+ON Target.CustomerID = Source.CustomerID
+WHEN MATCHED THEN
+    UPDATE SET
+        Target.OrderCount2013 = Source.OrderCount2013,
+        Target.TotalSales2013 = Source.TotalSales2013
+WHEN NOT MATCHED THEN
+    INSERT (CustomerID, OrderCount2012, TotalSales2012, OrderCount2013, TotalSales2013)
+    VALUES (Source.CustomerID, 0, 0, Source.OrderCount2013, Source.TotalSales2013);
+
+
+
+    SELECT * FROM #CustomerSummary
