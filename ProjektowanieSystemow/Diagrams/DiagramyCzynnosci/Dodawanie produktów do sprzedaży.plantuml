@@ -1,0 +1,31 @@
+@startuml
+|Właściciel|
+start
+:Zaloguj się do systemu;
+
+:Otwórz panel zarządzania produktami;
+
+if (Akcja?) then (Dodaj nowy produkt)
+    :Wprowadź dane produktu
+    (nazwa, kategoria, ilość, cena, dostawa);
+else (Edytuj istniejący produkt)
+    :Wybierz produkt do edycji z listy;
+    :Zmień dane produktu
+    (nazwa, kategoria, ilość, cena, dostawa);
+endif
+
+|System|
+:Sprawdź poprawność danych produktu;
+
+if (Dane poprawne?) then (Tak)
+    :Zapisz produkt do bazy;
+    |Właściciel|
+    :Wyświetl potwierdzenie operacji;
+else (Nie)
+    |Właściciel|
+    :Wyświetl komunikat o błędnych danych;
+    stop
+endif
+
+stop
+@enduml

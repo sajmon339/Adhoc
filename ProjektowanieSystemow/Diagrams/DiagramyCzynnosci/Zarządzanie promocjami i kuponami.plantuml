@@ -1,0 +1,38 @@
+@startuml
+|Właściciel|
+start
+:Zaloguj się do systemu;
+
+:Otwórz panel promocji i kuponów;
+
+if (Akcja?) then (Dodaj nową promocję)
+    :Wprowadź szczegóły promocji
+    (rabat, data ważności, kod, opis);
+else (Edytuj istniejącą promocję)
+    :Wybierz promocję z listy;
+    :Zmień szczegóły promocji
+    (rabat, data ważności, kod, opis);
+endif
+
+|System|
+:Walidacja danych promocji/kuponu;
+
+if (Dane poprawne?) then (Tak)
+    :Zapisz promocję w bazie;
+
+    |Właściciel|
+    :Przejrzyj szczegóły promocji
+    przed aktywacją;
+    :Aktywuj promocję;
+
+    |System|
+    :Powiadom klientów o promocji
+    (Newsletter/SMS);
+else (Nie)
+    |Właściciel|
+    :Wyświetl komunikat o błędnych danych;
+    stop
+endif
+
+stop
+@enduml

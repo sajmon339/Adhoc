@@ -1,0 +1,12 @@
+@startuml
+actor "Shop Employee" as Employee
+rectangle "Invoice System" {
+    usecase "Retrieve Order Details" as UC_RetrieveOrder
+    usecase "Generate Invoice" as UC_GenerateInvoice
+    usecase "Send Invoice to Customer" as UC_SendInvoice
+}
+
+Employee --> UC_RetrieveOrder
+UC_RetrieveOrder --> UC_GenerateInvoice
+UC_GenerateInvoice --> UC_SendInvoice
+@enduml

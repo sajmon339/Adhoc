@@ -1,0 +1,89 @@
+@startuml
+class Użytkownik {
+    - id: int
+    - email: string
+    - hasło: string
+    - rola: string
+    + zaloguj(): void
+    + wyloguj(): void
+}
+
+class Klient {
+    - imię: string
+    - nazwisko: string
+    - adres: string
+    + przeglądajProdukty(): void
+    + dodajDoKoszyka(produkt): void
+    + zrealizujZakup(): void
+    + porównajProdukty(): void
+}
+
+class Produkt {
+    - id: int
+    - nazwa: string
+    - kategoria: string
+    - cena: float
+    - ilość: int
+    - metodaDostawy: string
+    - promocja: string
+    + edytujProdukt(): void
+}
+
+class Zamówienie {
+    - id: int
+    - data: date
+    - status: string
+    + generujFakturę(): void
+    + wyślijFakturę(): void
+}
+
+class Właściciel {
+    + dodajProdukt(produkt): void
+    + monitorujStanMagazynowy(): void
+    + zarządzajPromocjami(): void
+    + generujFaktury(): void
+}
+
+class Koszyk {
+    - produkty: Produkt[]
+    + dodajProdukt(produkt): void
+    + usuńProdukt(produkt): void
+    + obliczWartość(): float
+}
+
+class Powiadomienia {
+    - typ: string
+    + wyślijEmail(): void
+    + wyślijSMS(): void
+}
+
+class Płatność {
+    - metoda: string
+    - kwota: float
+    + przetwórzPłatność(): void
+}
+
+class Promocja {
+    - kod: string
+    - opis: string
+    - rabat: float
+}
+
+class Chat {
+    + rozpocznijSesję(): void
+    + wysyłajWiadomość(treść: string): void
+    + zakończSesję(): void
+}
+
+Użytkownik <|-- Klient
+Użytkownik <|-- Właściciel
+Klient --> Koszyk
+Klient --> Zamówienie
+Klient --> Powiadomienia
+Klient --> Chat
+Klient --> Płatność
+Właściciel --> Produkt
+Właściciel --> Powiadomienia
+Właściciel --> Promocja
+Produkt --> Zamówienie
+@enduml

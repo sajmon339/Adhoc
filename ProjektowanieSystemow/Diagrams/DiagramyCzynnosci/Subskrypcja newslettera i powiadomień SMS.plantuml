@@ -1,0 +1,29 @@
+@startuml
+|Klient|
+start
+:Otwórz stronę subskrypcji;
+
+:Wprowadź dane kontaktowe
+(email, numer telefonu);
+
+:Wybierz typ subskrypcji
+(Newsletter, SMS, oba);
+
+|System|
+:Weryfikacja danych kontaktowych;
+
+if (Dane poprawne?) then (Tak)
+    :Zapisz użytkownika do bazy subskrypcji;
+    |Klient|
+    :Wyświetl potwierdzenie subskrypcji;
+    :Otrzymuj powiadomienia
+    (promocje, status zamówień);
+else (Nie)
+    |Klient|
+    :Wyświetl komunikat o błędzie
+    (np. nieprawidłowy email);
+    stop
+endif
+
+stop
+@enduml

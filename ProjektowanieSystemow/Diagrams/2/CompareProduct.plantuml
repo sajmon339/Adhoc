@@ -1,0 +1,10 @@
+@startuml
+actor "Customer" as Customer
+rectangle "Product Comparison" {
+    usecase "Select Products for Comparison" as UC_SelectProducts
+    usecase "View Comparison Results" as UC_ViewComparison
+}
+
+Customer --> UC_SelectProducts
+UC_SelectProducts --> UC_ViewComparison
+@enduml

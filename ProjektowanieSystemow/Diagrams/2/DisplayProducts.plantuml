@@ -1,0 +1,16 @@
+@startuml
+actor "Customer" as Customer
+rectangle "Product Viewing" {
+    usecase "Search Products" as UC_Search
+    usecase "Filter Products" as UC_Filter
+    usecase "Sort Products" as UC_Sort
+    usecase "View Product Details" as UC_Details
+}
+
+Customer --> UC_Search
+Customer --> UC_Filter
+Customer --> UC_Sort
+Customer --> UC_Details
+UC_Search --> UC_Filter
+UC_Filter --> UC_Sort
+@enduml

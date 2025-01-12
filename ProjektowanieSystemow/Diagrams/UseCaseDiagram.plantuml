@@ -1,0 +1,44 @@
+@startuml
+left to right direction
+skinparam packageStyle rect
+
+actor "Guest" as Guest
+actor "Customer" as Customer
+actor "Owner/Employee" as OwnerEmployee
+
+package "All Here - E-commerce System" {
+
+    usecase "Login to System" as UC_Login
+    usecase "Log Out" as UC_Logout
+
+    usecase "View Products" as UC_ViewProducts
+    usecase "Purchase Products" as UC_PurchaseProducts
+    usecase "Compare Products" as UC_CompareProducts
+    usecase "Receive Notifications\n(Newsletter/SMS)" as UC_Notifications
+    usecase "Customer Support Chat" as UC_Chat
+
+    usecase "Add Products" as UC_AddProducts
+    usecase "Monitor Inventory" as UC_Inventory
+    usecase "Manage Promotions & Coupons" as UC_Promotions
+    usecase "Generate and Send Invoices" as UC_Invoices
+}
+
+Guest --> UC_ViewProducts
+Guest --> UC_CompareProducts
+Guest --> UC_Login
+
+Customer --> UC_Logout
+Customer --> UC_ViewProducts
+Customer --> UC_PurchaseProducts
+Customer --> UC_CompareProducts
+Customer --> UC_Notifications
+Customer --> UC_Chat
+
+OwnerEmployee --> UC_Logout
+OwnerEmployee --> UC_AddProducts
+OwnerEmployee --> UC_Inventory
+OwnerEmployee --> UC_Promotions
+OwnerEmployee --> UC_Invoices
+OwnerEmployee --> UC_Chat
+
+@enduml

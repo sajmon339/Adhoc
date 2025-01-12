@@ -1,0 +1,41 @@
+@startuml
+|Kupujący (Guest)|
+start
+:Odwiedź sklep internetowy;
+:Przeglądaj produkty;
+:Porównaj produkty;
+
+if (Zaloguj się?) then (Tak)
+    :Wprowadź dane logowania;
+
+    |System|
+    :Autoryzacja użytkownika;
+    if (Dane poprawne?) then (Tak)
+        :Przekierowanie na odpowiedni panel;
+
+        |Kupujący (Customer)|
+        :Przeglądaj produkty;
+        :Dodaj produkty do koszyka;
+        :Wybierz metodę dostawy;
+        :Wybierz metodę płatności
+        (karta, przelew, BLIK, Google Pay);
+
+        |System|
+        :Przetwarzanie płatności;
+        :Generowanie faktury;
+        :Wysyłka potwierdzenia zamówienia;
+
+        |Kupujący (Customer)|
+        :Otrzymaj potwierdzenie;
+        :Subskrybuj newsletter lub SMS;
+        :Wyloguj się;
+    else (Nie)
+        :Wyświetl błąd logowania;
+        stop
+    endif
+else (Nie)
+    :Kontynuuj przeglądanie jako gość;
+    stop
+endif
+
+@enduml

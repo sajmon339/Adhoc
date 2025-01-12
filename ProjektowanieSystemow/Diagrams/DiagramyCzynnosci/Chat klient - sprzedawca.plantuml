@@ -1,0 +1,54 @@
+@startuml
+|Klient|
+start
+:Otwórz chat wsparcia;
+
+:Wybierz temat zapytania
+(np. zamówienia, reklamacje, produkty);
+
+|System|
+:Przekaż pytanie do chatbota;
+
+:Chatbot odpowiada na podstawowe pytania;
+
+if (Problem rozwiązany?) then (Tak)
+    |Klient|
+    :Zamknij sesję czatu;
+    :Oceń jakość wsparcia
+    (opcjonalnie);
+    stop
+else (Nie)
+    :Przekierowanie do pracownika;
+endif
+
+:Połącz z odpowiednim pracownikiem;
+
+if (Pracownik dostępny?) then (Tak)
+    |Sprzedawca|
+    :Otrzymaj notyfikację o nowym zapytaniu;
+    :Rozpocznij sesję czatu;
+else (Nie)
+    :Dodaj klienta do kolejki;
+    :Informuj o czasie oczekiwania;
+endif
+
+|Klient|
+repeat
+    :Zadaj pytanie sprzedawcy;
+    |Sprzedawca|
+    :Odpowiadaj na zapytania klienta;
+repeat while (Problem rozwiązany?) is (Nie)
+
+if (Problem rozwiązany?) then (Tak)
+    |Klient|
+    :Zamknij sesję czatu;
+    :Oceń jakość wsparcia
+    (opcjonalnie);
+else (Nie)
+    |Klient|
+    :Przekierowanie do innego działu wsparcia
+    (opcjonalnie);
+endif
+
+stop
+@enduml

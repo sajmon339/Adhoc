@@ -1,0 +1,24 @@
+@startuml
+|Użytkownik|
+start
+:Wprowadź dane logowania;
+
+|System|
+:Autoryzacja użytkownika;
+
+if (Dane poprawne?) then (Tak)
+    :Sprawdzenie roli użytkownika;
+    if (Rola == "Klient") then (Klient)
+        :Przekierowanie na panel klienta;
+    else if (Rola == "Właściciel/Pracownik") then (Właściciel/Pracownik)
+        :Przekierowanie na panel administracyjny;
+    endif
+else (Nie)
+    |Użytkownik|
+    :Wyświetl błąd logowania;
+    stop
+endif
+
+:Wyświetl odpowiedni panel;
+stop
+@enduml

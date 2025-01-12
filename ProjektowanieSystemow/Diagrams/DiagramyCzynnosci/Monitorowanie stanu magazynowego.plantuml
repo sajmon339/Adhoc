@@ -1,0 +1,39 @@
+@startuml
+|Właściciel|
+start
+:Zaloguj się do systemu;
+
+:Otwórz panel monitorowania magazynu;
+
+|System|
+:Wyświetl aktualny stan magazynu;
+
+if (Niski stan magazynowy?) then (Tak)
+    :Wygeneruj alert o niskim stanie;
+    :Wybierz działanie:
+    (1) Zwiększ ilość zapasów
+    (2) Przeglądaj raport magazynu;
+    if (Zwiększ ilość zapasów?) then (Tak)
+        |Właściciel|
+        :Wybierz produkt do aktualizacji;
+        :Wprowadź nową ilość;
+        |System|
+        :Zaktualizuj stan magazynowy w bazie;
+        if (Aktualizacja powiodła się?) then (Tak)
+            |Właściciel|
+            :Wyświetl potwierdzenie aktualizacji;
+        else (Nie)
+            |Właściciel|
+            :Wyświetl komunikat o błędzie aktualizacji;
+        endif
+    else (Przeglądaj raport)
+        |System|
+        :Generuj raport magazynowy;
+        :Wyświetl raport szczegółowy;
+    endif
+else (Nie)
+    :Kontynuuj monitorowanie;
+endif
+
+stop
+@enduml

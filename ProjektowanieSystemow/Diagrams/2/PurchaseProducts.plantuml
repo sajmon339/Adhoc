@@ -1,0 +1,16 @@
+@startuml
+actor "Customer" as Customer
+rectangle "Purchase System" {
+    usecase "Add Products to Cart" as UC_AddCart
+    usecase "Review Cart" as UC_ReviewCart
+    usecase "Select Payment Method" as UC_Payment
+    usecase "Confirm Order" as UC_Confirm
+    usecase "Generate Order Invoice" as UC_GenerateInvoice
+}
+
+Customer --> UC_AddCart
+UC_AddCart --> UC_ReviewCart
+UC_ReviewCart --> UC_Payment
+UC_Payment --> UC_Confirm
+UC_Confirm --> UC_GenerateInvoice
+@enduml

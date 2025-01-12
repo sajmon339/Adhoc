@@ -1,0 +1,15 @@
+@startuml
+actor "User" as User
+rectangle "Login System" {
+    usecase "Enter Email/Username" as UC_EnterCredentials
+    usecase "Enter Password" as UC_EnterPassword
+    usecase "Authenticate User" as UC_Authenticate
+    usecase "Display Login Result" as UC_DisplayResult
+}
+
+User --> UC_EnterCredentials
+User --> UC_EnterPassword
+UC_EnterCredentials --> UC_Authenticate
+UC_EnterPassword --> UC_Authenticate
+UC_Authenticate --> UC_DisplayResult
+@enduml

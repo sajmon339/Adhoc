@@ -1,0 +1,43 @@
+@startuml
+|Klient|
+start
+:Wybierz produkty i dodaj do koszyka;
+
+repeat
+    :Przeglądaj koszyk;
+    :Edytuj produkty w koszyku
+    (usuń, zmień ilość);
+repeat while (Koszyk gotowy?) is (Nie)
+
+:Przejdź do koszyka;
+:Wybierz metodę dostawy
+(punkt odbioru, kurier, odbiór osobisty);
+
+:Wprowadź dane do dostawy
+(adres, dane kontaktowe);
+
+|System|
+:Wyświetl dostępne metody płatności;
+
+|Klient|
+:Wybierz metodę płatności
+(karta, przelew, BLIK, Google Pay);
+
+|System|
+:Przetwarzanie płatności;
+
+if (Płatność sukces?) then (Tak)
+    :Generowanie faktury;
+    :Zaktualizuj status zamówienia;
+
+    |Klient|
+    :Otrzymaj potwierdzenie zamówienia
+    (email/SMS);
+else (Nie)
+    |Klient|
+    :Wyświetl komunikat o błędzie płatności;
+    :Wybierz inną metodę płatności;
+endif
+
+stop
+@enduml

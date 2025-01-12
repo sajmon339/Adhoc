@@ -1,0 +1,49 @@
+@startuml
+|Kupujący\n(Guest)|
+start
+:Odwiedź sklep internetowy;
+:Przeglądaj produkty;
+:Porównaj produkty;
+
+:Subskrybuj newsletter lub SMS;
+
+:Zaloguj się;
+|System|
+:Autoryzacja użytkownika;
+
+if (Dane poprawne?) then (Tak)
+    :Przekierowanie na odpowiedni panel;
+
+    if (Rola == Customer) then (Customer)
+        |Kupujący\n(Customer)|
+        :Przeglądaj produkty;
+        :Dodaj produkty do koszyka;
+        :Wybierz metodę dostawy;
+        :Wybierz metodę płatności
+        (karta, przelew, BLIK, Google Pay);
+
+        |System|
+        :Przetwarzanie płatności;
+        :Generowanie faktury;
+        :Wysyłka potwierdzenia zamówienia;
+
+        |Kupujący\n(Customer)|
+        :Otrzymaj potwierdzenie;
+    else if (Rola == Owner/Employee) then (Owner/Employee)
+        |Właściciel / Pracownik\n(Owner/Employee)|
+        :Otwórz panel zarządzania produktami;
+        :Dodaj/Edytuj produkty
+        (nazwa, cena, ilość, kategoria, dostawa);
+
+        :Monitoruj stan magazynowy;
+        :Zarządzaj promocjami i kuponami;
+        :Generuj faktury dla zamówień;
+    endif
+else (Nie)
+    |Kupujący\n(Guest)|
+    :Wyświetl błąd logowania;
+endif
+
+:Wyloguj się;
+stop
+@enduml

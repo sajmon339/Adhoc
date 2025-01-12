@@ -1,0 +1,27 @@
+Rodzaj biznesu:
+    Sklep internetowy, wielobranżowy
+Nazwa sklepu
+    All Here
+Cele Projektu:
+Ogólne:
+    system logowania (klient, pracownik sklepu)
+    generowanie i wysyłanie faktur
+    aplikacja WEB oraz mobilna
+    chat klient - sprzedawca
+
+Dla klienta sklepu:
+    wyświetlanie produktów do sprzedaży klientowi ostatecznemu
+    Możliwość zakupienia produktów przez klienta ostatecznego
+    Możliwość opłacenia zakupów przez klienta ostatecznego (możliwość wyboru: karta, przelew, blik, google pay, etc.)
+    możliwość porównania produktów tej samej kategorii
+    newsletter, powiadomienia SMS
+    
+Dla właściciela sklepu:
+    Dodawanie produktów do sprzedaży
+        kategoria produktu
+        ilość
+        cena
+        sposób dostawy (punkt odbioru przesyłek, kurier, odbiór osobisty)
+    monitorowanie stanu magazynowego
+    możliwość wdrażania promocji, kuponów, newslettera
+

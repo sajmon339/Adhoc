@@ -1,0 +1,26 @@
+@startuml
+|Klient|
+start
+:Otwórz stronę główną;
+:Wybierz kategorię produktów;
+
+fork
+    :Użyj funkcji wyszukiwania (search);
+fork again
+    :Zastosuj filtry produktów
+    (kategoria, cena, marka);
+fork again
+    :Zastosuj sortowanie produktów
+    (cena, popularność, oceny);
+end fork
+
+:Wyświetl listę produktów;
+
+repeat
+    :Wybierz produkt z listy;
+    :Zobacz szczegóły wybranego produktu;
+    :Dodaj produkt do koszyka (opcjonalnie);
+repeat while (Chcesz zobaczyć inne produkty?) is (Tak)
+
+stop
+@enduml

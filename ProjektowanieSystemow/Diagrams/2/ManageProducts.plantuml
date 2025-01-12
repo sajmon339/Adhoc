@@ -1,0 +1,14 @@
+@startuml
+actor "Shop Owner" as Owner
+rectangle "Product Management" {
+    usecase "Add Product" as UC_AddProduct
+    usecase "Edit Product" as UC_EditProduct
+    usecase "Remove Product" as UC_RemoveProduct
+    usecase "Define Delivery Methods" as UC_DeliveryMethods
+}
+
+Owner --> UC_AddProduct
+Owner --> UC_EditProduct
+Owner --> UC_RemoveProduct
+UC_AddProduct --> UC_DeliveryMethods
+@enduml
