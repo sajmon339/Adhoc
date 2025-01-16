@@ -1,0 +1,50 @@
+@startuml
+top to bottom direction
+skinparam packageStyle rect
+skinparam usecase {
+    BackgroundColor<<Guest>> LightSkyBlue
+    BackgroundColor<<Customer>> LightGreen
+    BackgroundColor<<OwnerEmployee>> LightSalmon
+}
+
+actor "Guest" as Guest
+actor "Customer" as Customer
+actor "Owner/Employee" as OwnerEmployee
+
+package "All Here - E-commerce System" {
+
+    usecase "Login to System" as UC_Login <<Guest>> <<Customer>> <<OwnerEmployee>>
+    usecase "Log Out" as UC_Logout <<Customer>> <<OwnerEmployee>>
+
+    usecase "View Products" as UC_ViewProducts <<Guest>> <<Customer>>
+    usecase "Compare Products" as UC_CompareProducts <<Guest>> <<Customer>>
+    usecase "Purchase Products" as UC_PurchaseProducts <<Customer>>
+
+    usecase "Receive Notifications\n(Newsletter/SMS)" as UC_Notifications <<Customer>>
+    usecase "Customer Support Chat" as UC_Chat <<Customer>> <<OwnerEmployee>>
+
+    usecase "Add Products" as UC_AddProducts <<OwnerEmployee>>
+    usecase "Monitor Inventory" as UC_Inventory <<OwnerEmployee>>
+    usecase "Manage Promotions & Coupons" as UC_Promotions <<OwnerEmployee>>
+    usecase "Generate and Send Invoices" as UC_Invoices <<OwnerEmployee>>
+}
+
+Guest -down-> UC_Login
+Guest -down-> UC_ViewProducts
+Guest -down-> UC_CompareProducts
+
+Customer -down-> UC_Logout
+Customer -down-> UC_ViewProducts
+Customer -down-> UC_PurchaseProducts
+Customer -down-> UC_CompareProducts
+Customer -down-> UC_Notifications
+Customer -down-> UC_Chat
+
+OwnerEmployee -down-> UC_Logout
+OwnerEmployee -down-> UC_AddProducts
+OwnerEmployee -down-> UC_Inventory
+OwnerEmployee -down-> UC_Promotions
+OwnerEmployee -down-> UC_Invoices
+OwnerEmployee -down-> UC_Chat
+
+@enduml
