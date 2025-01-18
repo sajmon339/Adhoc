@@ -1,0 +1,130 @@
+@startuml
+
+class User {
+  +user_id: int
+  +name: string
+  +email: string
+  +phone: string
+  +address: string
+  +password: string
+  +role: string
+  +register()
+  +login()
+  +update_profile()
+  +reset_password()
+}
+
+class Product {
+  +product_id: int
+  +name: string
+  +category: string
+  +price: float
+  +description: string
+  +stock_quantity: int
+  +manufacturer: string
+  +rating: float
+  +image_url: string
+  +add_product()
+  +update_product()
+  +delete_product()
+  +get_product_info()
+}
+
+class Order {
+  +order_id: int
+  +customer_id: int
+  +order_date: Date
+  +status: string
+  +total_amount: float
+  +payment_method: string
+  +delivery_method: string
+  +place_order()
+  +update_status()
+  +get_order_details()
+  +calculate_total()
+}
+
+class Cart {
+  +cart_id: int
+  +customer_id: int
+  +products: List<Product>
+  +total_price: float
+  +add_item()
+  +remove_item()
+  +clear_cart()
+  +update_quantity()
+}
+
+class Payment {
+  +payment_id: int
+  +order_id: int
+  +amount: float
+  +payment_date: Date
+  +payment_status: string
+  +process_payment()
+  +refund()
+  +get_payment_status()
+}
+
+class Promotion {
+  +promotion_id: int
+  +type: string
+  +discount_value: float
+  +start_date: Date
+  +end_date: Date
+  +products_covered: List<Product>
+  +create_promotion()
+  +apply_discount()
+}
+
+class Inventory {
+  +product_id: int
+  +quantity_in_stock: int
+  +threshold_level: int
+  +update_stock()
+  +check_stock()
+  +notify_low_stock()
+}
+
+class Shipping {
+  +shipping_id: int
+  +order_id: int
+  +shipping_method: string
+  +shipping_date: Date
+  +tracking_number: string
+  +assign_shipping()
+  +track_package()
+  +update_status()
+}
+
+class Review {
+  +review_id: int
+  +product_id: int
+  +customer_id: int
+  +rating: float
+  +comment: string
+  +add_review()
+  +edit_review()
+  +delete_review()
+}
+
+class Report {
+  +report_id: int
+  +type: string
+  +date_range: string
+  +data: List<string>
+  +generate_report()
+  +get_sales_data()
+  +get_customer_data()
+}
+
+User "1" -- "0..*" Order
+User "1" -- "0..*" Cart
+Product "0..*" -- "0..*" Order
+Order "1" -- "1..*" Payment
+Order "1" -- "0..*" Shipping
+Order "1" -- "0..*" Review
+Product "0..*" -- "0..*" Promotion
+Product "0..*" -- "0..*" Inventory
+
+@enduml
