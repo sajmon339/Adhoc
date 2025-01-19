@@ -1,0 +1,846 @@
+/*Lab5_1.1.sql*/
+use AdventureWorks2019
+
+go
+
+
+
+DROP TABLE IF EXISTS dbo.Konta;
+
+CREATE TABLE dbo.Konta (
+    IdKonta INT PRIMARY KEY IDENTITY (1,1),
+    Imie VARCHAR(50),
+    Saldo DECIMAL(10, 2)
+);
+
+INSERT INTO dbo.Konta ( Imie, Saldo) VALUES
+( 'Jan Kowalski', 1000.00),
+( 'Anna Nowak', 1500.00);
+
+GO
+DROP PROCEDURE IF EXISTS dbo.ManageAccounts;
+GO
+
+CREATE PROCEDURE dbo.ManageAccounts
+    @InterestRate DECIMAL(5, 2),
+    @SimulateError BIT = 0
+AS
+BEGIN
+    DECLARE @ErrorCode INT;
+    DECLARE @TranCount INT;
+
+    IF @@TRANCOUNT > 0
+    BEGIN
+        PRINT 'Transaction already active. Exiting to prevent recursion.';
+        RETURN;
+    END
+
+    BEGIN TRANSACTION;
+
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM dbo.Konta WHERE Imie = 'Marek Iksiński')
+        BEGIN
+            INSERT INTO dbo.Konta (Imie, Saldo)
+            VALUES ('Marek Iksiński', 1000.00);
+
+            PRINT 'Record successfully inserted into the table.';
+        END
+
+        UPDATE dbo.Konta
+        SET Saldo = Saldo + (Saldo * @InterestRate / 100);
+
+        PRINT 'Balances updated successfully.';
+
+        IF @SimulateError = 1
+        BEGIN
+            PRINT 'Simulating an error...';
+            DECLARE @SimulatedError INT = 1 / 0;
+        END;
+
+        COMMIT;
+        PRINT 'Transaction committed successfully.';
+    END TRY
+    BEGIN CATCH
+        SET @ErrorCode = ERROR_NUMBER();
+        SET @TranCount = @@TRANCOUNT;
+
+        IF @TranCount > 0
+        BEGIN
+            ROLLBACK;
+            PRINT 'Transakcja została wycofana.';
+        END;
+
+        PRINT 'Kod błędu: ' + CAST(@ErrorCode AS VARCHAR);
+    END CATCH;
+END;
+
+EXEC dbo.ManageAccounts @InterestRate = 1.2, @SimulateError = 0;
+
+
+SELECT * FROM Konta
+SELECT @@TRANCOUNT;
+/*Lab5_1.2.sql*/
+use AdventureWorks2019
+
+go
+
+
+
+DROP TABLE IF EXISTS dbo.Konta;
+
+CREATE TABLE dbo.Konta (
+    IdKonta INT PRIMARY KEY IDENTITY (1,1),
+    Imie VARCHAR(50),
+    Saldo DECIMAL(10, 2)
+);
+
+INSERT INTO dbo.Konta ( Imie, Saldo) VALUES
+( 'Jan Kowalski', 1000.00),
+( 'Anna Nowak', 1500.00);
+
+GO
+GO
+DROP PROCEDURE IF EXISTS dbo.ManageAccounts;
+GO
+
+CREATE PROCEDURE dbo.ManageAccounts
+    @InterestRate DECIMAL(5, 2),
+    @SimulateError BIT = 0
+AS
+BEGIN
+    DECLARE @ErrorCode INT;
+    DECLARE @TranCount INT;
+    DECLARE @InterestRateStr VARCHAR(10);
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (SELECT 1 FROM dbo.Konta WHERE Imie = 'Marek Iksiński')
+        BEGIN
+            INSERT INTO dbo.Konta (Imie, Saldo)
+            VALUES ('Marek Iksiński', 1000.00);
+
+            PRINT 'Record successfully inserted into the table.';
+        END
+
+        UPDATE dbo.Konta
+        SET Saldo = Saldo + (Saldo * @InterestRate / 100);
+
+        PRINT 'Balances updated successfully.';
+
+        IF @SimulateError = 1
+        BEGIN
+            PRINT 'Simulating an error...';
+            SELECT 1 / 0;
+        END;
+
+        COMMIT;
+        PRINT 'Transaction committed successfully.';
+    END TRY
+    BEGIN CATCH
+        SET @ErrorCode = ERROR_NUMBER();
+        SET @TranCount = @@TRANCOUNT;
+
+        IF @TranCount > 0
+        BEGIN
+            ROLLBACK;
+            PRINT 'Transakcja została wycofana.';
+        END;
+
+        SET @InterestRateStr = CAST(@InterestRate AS VARCHAR(10));
+
+        RAISERROR (N'Uwaga, wystąpił błąd o numerze %d, gdy wprowadzono parametr wejściowy %s.',
+                   10,
+                   1,
+                   @ErrorCode,
+                   @InterestRateStr);
+
+        PRINT 'Kod błędu: ' + CAST(@ErrorCode AS VARCHAR(10));
+    END CATCH;
+END;
+
+
+
+EXEC dbo.ManageAccounts @InterestRate = 1.2, @SimulateError = 1;
+
+
+SELECT * FROM Konta
+
+/*Lab5_1.3.sql*/
+use AdventureWorks2019
+
+go
+
+GO
+
+DROP TABLE IF EXISTS dbo.ErrorLog;
+
+CREATE TABLE dbo.ErrorLog (
+    LogId INT IDENTITY(1,1) PRIMARY KEY,
+    LogDateTime DATETIME DEFAULT GETDATE(),
+    UserName NVARCHAR(128) DEFAULT SUSER_NAME(),
+    ErrorCommand NVARCHAR(MAX),
+    ErrorCode INT
+);
+
+
+GO
+DROP TABLE IF EXISTS dbo.Konta;
+
+CREATE TABLE dbo.Konta (
+    IdKonta INT PRIMARY KEY IDENTITY (1,1),
+    Imie VARCHAR(50),
+    Saldo DECIMAL(10, 2)
+);
+
+INSERT INTO dbo.Konta ( Imie, Saldo) VALUES
+( 'Jan Kowalski', 1000.00),
+( 'Anna Nowak', 1500.00);
+
+GO
+GO
+DROP PROCEDURE IF EXISTS dbo.ManageAccounts;
+GO
+
+CREATE PROCEDURE dbo.ManageAccounts
+    @InterestRate DECIMAL(5, 2),
+    @SimulateError BIT = 0
+AS
+BEGIN
+    DECLARE @ErrorCode INT;
+    DECLARE @TranCount INT;
+    DECLARE @InterestRateStr VARCHAR(10);
+    DECLARE @ErrorCommand NVARCHAR(MAX);
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (SELECT 1 FROM dbo.Konta WHERE Imie = 'Marek Iksiński')
+        BEGIN
+            INSERT INTO dbo.Konta (Imie, Saldo)
+            VALUES ('Marek Iksiński', 1000.00);
+
+            PRINT 'Record successfully inserted into the table.';
+        END
+
+        UPDATE dbo.Konta
+        SET Saldo = Saldo + (Saldo * @InterestRate / 100);
+
+        PRINT 'Balances updated successfully.';
+
+        IF @SimulateError = 1
+        BEGIN
+            PRINT 'Simulating an error...';
+            SELECT 1 / 0;
+        END;
+
+        COMMIT;
+        PRINT 'Transaction committed successfully.';
+    END TRY
+    BEGIN CATCH
+        SET @ErrorCode = ERROR_NUMBER();
+        SET @TranCount = @@TRANCOUNT;
+        SET @ErrorCommand = ERROR_MESSAGE();
+
+        IF @TranCount > 0
+        BEGIN
+            ROLLBACK;
+            PRINT 'Transakcja została wycofana.';
+        END;
+
+        SET @InterestRateStr = CAST(@InterestRate AS VARCHAR(10));
+
+        INSERT INTO dbo.ErrorLog (ErrorCommand, ErrorCode)
+        VALUES (@ErrorCommand, @ErrorCode);
+
+        RAISERROR (N'Uwaga, wystąpił błąd o numerze %d, gdy wprowadzono parametr wejściowy %s.',
+                   10,
+                   1,
+                   @ErrorCode,
+                   @InterestRateStr);
+
+        PRINT 'Kod błędu: ' + CAST(@ErrorCode AS VARCHAR(10));
+    END CATCH;
+END;
+
+
+
+EXEC dbo.ManageAccounts @InterestRate = 1.2, @SimulateError = 1;
+
+
+SELECT * FROM Konta
+select * from dbo.ErrorLog
+
+/*Lab5_2.1.sql*/
+DROP TABLE IF EXISTS dbo.Pracownicy
+GO
+
+CREATE TABLE dbo.Pracownicy (
+prac_id INT PRIMARY KEY,
+prac_imie VARCHAR(20),
+prac_nazwisko VARCHAR(20),
+prac_projekty VARCHAR(30)
+);
+
+GO
+DROP TABLE IF EXISTS dbo.Projekty
+GO
+CREATE TABLE dbo.Projekty (
+proj_id INT PRIMARY KEY IDENTITY,
+proj_nazwa VARCHAR(20)
+);
+GO
+INSERT INTO Pracownicy (prac_id, prac_imie, prac_nazwisko,
+prac_projekty)
+VALUES
+(1, 'Anna', 'Kowalska', '1,23,34,21,24,56,68'),
+(7, 'Jan', 'Nowak', '2,67'),
+(12, 'Maria', 'Wiśniewska', '73,87,88,91'),
+(40, 'Tomasz', 'Zieliński', '34,56,56,67,98'),
+(41, 'Katarzyna', 'Szymańska', '3'),
+(45, 'Michał', 'Woźniak', null),
+(71, 'Agnieszka', 'Krawczyk', '89,13,76,2'),
+(83, 'Piotr', 'Wójcik', '23,44,77,12'),
+(84, 'Magdalena', 'Nowicka', '8,88'),
+(85, 'Adam', 'Jankowski', '37,78,90');
+
+GO
+
+DECLARE @i INT = 1;
+WHILE @i <= 100
+BEGIN
+INSERT INTO dbo.Projekty (proj_nazwa)
+VALUES ('Projekt ' + CAST(@i AS VARCHAR(10)));
+SET @i = @i + 1;
+END;
+
+GO
+
+DROP TABLE IF EXISTS dbo.PracownicyProjekty;
+GO
+CREATE TABLE dbo.PracownicyProjekty (
+    pracproj_id INT IDENTITY(1,1) PRIMARY KEY,
+    pracproj_id_prac INT NOT NULL,
+    pracproj_id_proj INT NOT NULL,
+    FOREIGN KEY (pracproj_id_prac) REFERENCES dbo.Pracownicy(prac_id),
+    FOREIGN KEY (pracproj_id_proj) REFERENCES dbo.Projekty(proj_id)
+);
+GO
+DECLARE @prac_id INT;
+DECLARE @prac_projekty VARCHAR(MAX);
+DECLARE @proj_id INT;
+DECLARE @start INT;
+DECLARE @length INT;
+
+DECLARE prac_cursor CURSOR FOR
+SELECT prac_id, prac_projekty
+FROM dbo.Pracownicy
+WHERE prac_projekty IS NOT NULL;
+
+OPEN prac_cursor;
+
+FETCH NEXT FROM prac_cursor INTO @prac_id, @prac_projekty;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    SET @start = 1;
+    SET @proj_id = NULL;
+
+    WHILE CHARINDEX(',', @prac_projekty, @start) > 0
+    BEGIN
+        SET @length = CHARINDEX(',', @prac_projekty, @start) - @start;
+        SET @proj_id = CAST(SUBSTRING(@prac_projekty, @start, @length) AS INT);
+
+        INSERT INTO dbo.PracownicyProjekty (pracproj_id_prac, pracproj_id_proj)
+        VALUES (@prac_id, @proj_id);
+
+        SET @start = CHARINDEX(',', @prac_projekty, @start) + 1;
+    END
+
+    IF LEN(@prac_projekty) >= @start
+    BEGIN
+        SET @proj_id = CAST(SUBSTRING(@prac_projekty, @start, LEN(@prac_projekty) - @start + 1) AS INT);
+
+        INSERT INTO dbo.PracownicyProjekty (pracproj_id_prac, pracproj_id_proj)
+        VALUES (@prac_id, @proj_id);
+    END
+
+    FETCH NEXT FROM prac_cursor INTO @prac_id, @prac_projekty;
+END
+
+CLOSE prac_cursor;
+DEALLOCATE prac_cursor;
+GO
+
+ALTER TABLE dbo.Pracownicy DROP COLUMN prac_projekty;
+GO
+
+SELECT * FROM dbo.PracownicyProjekty;
+GO
+SELECT p.prac_imie, p.prac_nazwisko, pr.proj_nazwa
+FROM dbo.PracownicyProjekty pp
+JOIN dbo.Pracownicy p ON pp.pracproj_id_prac = p.prac_id
+JOIN dbo.Projekty pr ON pp.pracproj_id_proj = pr.proj_id;
+GO
+
+/*Lab5_2.2.sql*/
+DROP TABLE IF EXISTS dbo.StatusTypes;
+DROP TABLE IF EXISTS dbo.BudgetTypes;
+
+CREATE TABLE dbo.StatusTypes (
+    status_value VARCHAR(20) PRIMARY KEY
+);
+
+CREATE TABLE dbo.BudgetTypes (
+    budget_value VARCHAR(10) PRIMARY KEY
+);
+
+INSERT INTO dbo.StatusTypes (status_value)
+VALUES ('nowy'), ('w trakcie'), ('zakończony'), ('anulowany');
+
+INSERT INTO dbo.BudgetTypes (budget_value)
+VALUES ('lokalny'), ('centralny');
+GO
+
+DROP TABLE IF EXISTS dbo.Projekty;
+
+CREATE TABLE dbo.Projekty (
+    proj_id INT PRIMARY KEY IDENTITY,
+    proj_nazwa VARCHAR(20),
+    proj_status VARCHAR(20),
+    proj_budzet VARCHAR(10),
+    FOREIGN KEY (proj_status) REFERENCES dbo.StatusTypes(status_value),
+    FOREIGN KEY (proj_budzet) REFERENCES dbo.BudgetTypes(budget_value)
+);
+
+INSERT INTO dbo.Projekty (proj_nazwa, proj_status, proj_budzet)
+VALUES
+('Projekt Alpha', 'nowy', 'lokalny'),
+('Projekt Beta', 'w trakcie', 'centralny'),
+('Projekt Gamma', 'zakończony', 'lokalny'),
+('Projekt Delta', 'anulowany', 'centralny'),
+('Projekt Epsilon', 'nowy', 'lokalny'),
+('Projekt Zeta', 'w trakcie', 'centralny'),
+('Projekt Eta', 'zakończony', 'lokalny'),
+('Projekt Theta', 'anulowany', 'lokalny'),
+('Projekt Iota', 'nowy', 'centralny'),
+('Projekt Kappa', 'w trakcie', 'lokalny'),
+('Projekt Lambda', 'zakończony', 'centralny');
+
+SELECT * FROM dbo.StatusTypes;
+
+SELECT * FROM dbo.BudgetTypes;
+
+SELECT p.proj_id, p.proj_nazwa, p.proj_status, p.proj_budzet
+FROM dbo.Projekty p;
+
+
+/*Lab5_3.1.sql*/
+DROP TABLE IF EXISTS dbo.Pracownicy
+GO
+
+CREATE TABLE dbo.Pracownicy (
+prac_id INT PRIMARY KEY,
+prac_imie VARCHAR(20),
+prac_nazwisko VARCHAR(20),
+prac_projekty VARCHAR(30)
+);
+
+GO
+DROP TABLE IF EXISTS dbo.Projekty
+GO
+CREATE TABLE dbo.Projekty (
+proj_id INT PRIMARY KEY IDENTITY,
+proj_nazwa VARCHAR(20)
+);
+GO
+INSERT INTO Pracownicy (prac_id, prac_imie, prac_nazwisko,
+prac_projekty)
+VALUES
+(1, 'Anna', 'Kowalska', '1,23,34,21,24,56,68'),
+(7, 'Jan', 'Nowak', '2,67'),
+(12, 'Maria', 'Wiśniewska', '73,87,88,91'),
+(40, 'Tomasz', 'Zieliński', '34,56,56,67,98'),
+(41, 'Katarzyna', 'Szymańska', '3'),
+(45, 'Michał', 'Woźniak', null),
+(71, 'Agnieszka', 'Krawczyk', '89,13,76,2'),
+(83, 'Piotr', 'Wójcik', '23,44,77,12'),
+(84, 'Magdalena', 'Nowicka', '8,88'),
+(85, 'Adam', 'Jankowski', '37,78,90');
+
+GO
+
+DECLARE @i INT = 1;
+WHILE @i <= 100
+BEGIN
+INSERT INTO dbo.Projekty (proj_nazwa)
+VALUES ('Projekt ' + CAST(@i AS VARCHAR(10)));
+SET @i = @i + 1;
+END;
+
+
+GO
+ALTER TABLE dbo.Projekty
+ADD proj_status VARCHAR(30);
+
+GO
+
+ALTER TABLE dbo.Projekty
+ADD CONSTRAINT ck_status CHECK (proj_status IN ('nowy', 'w trakcie', 'zakończony pozytywnie', 'zakończony negatywnie'));
+
+GO
+UPDATE dbo.Projekty
+SET proj_status = 'nowy';
+GO
+
+INSERT INTO dbo.Projekty (proj_nazwa, proj_status)
+VALUES ('Projekt Omega', 'zakończony pozytywnie');
+GO
+/*Tu bedzie fail*/
+INSERT INTO dbo.Projekty (proj_nazwa, proj_status)
+VALUES ('Projekt Invalid', 'invalid_status');
+
+
+/*Lab5_3.2.sql*/
+    DROP TABLE IF EXISTS dbo.Pracownicy
+    GO
+
+    CREATE TABLE dbo.Pracownicy (
+    prac_id INT PRIMARY KEY,
+    prac_imie VARCHAR(20),
+    prac_nazwisko VARCHAR(20),
+    prac_projekty VARCHAR(30)
+    );
+
+    GO
+    DROP TABLE IF EXISTS dbo.Projekty
+    GO
+    CREATE TABLE dbo.Projekty (
+    proj_id INT PRIMARY KEY IDENTITY,
+    proj_nazwa VARCHAR(20)
+    );
+    GO
+    INSERT INTO Pracownicy (prac_id, prac_imie, prac_nazwisko,
+    prac_projekty)
+    VALUES
+    (1, 'Anna', 'Kowalska', '1,23,34,21,24,56,68'),
+    (7, 'Jan', 'Nowak', '2,67'),
+    (12, 'Maria', 'Wiśniewska', '73,87,88,91'),
+    (40, 'Tomasz', 'Zieliński', '34,56,56,67,98'),
+    (41, 'Katarzyna', 'Szymańska', '3'),
+    (45, 'Michał', 'Woźniak', null),
+    (71, 'Agnieszka', 'Krawczyk', '89,13,76,2'),
+    (83, 'Piotr', 'Wójcik', '23,44,77,12'),
+    (84, 'Magdalena', 'Nowicka', '8,88'),
+    (85, 'Adam', 'Jankowski', '37,78,90');
+
+    GO
+
+    DECLARE @i INT = 1;
+    WHILE @i <= 100
+    BEGIN
+    INSERT INTO dbo.Projekty (proj_nazwa)
+    VALUES ('Projekt ' + CAST(@i AS VARCHAR(10)));
+    SET @i = @i + 1;
+    END;
+
+GO
+ALTER TABLE dbo.Projekty ADD proj_status VARCHAR(30);
+GO
+
+UPDATE dbo.Projekty
+SET proj_status = 'nowy'
+WHERE proj_id <= 25;
+
+UPDATE dbo.Projekty
+SET proj_status = 'w trakcie'
+WHERE proj_id > 25 AND proj_id <= 50;
+
+UPDATE dbo.Projekty
+SET proj_status = 'zakończony pozytywnie'
+WHERE proj_id > 50 AND proj_id <= 75;
+
+UPDATE dbo.Projekty
+SET proj_status = 'zakończony negatywnie'
+WHERE proj_id > 75;
+GO
+
+CREATE TRIGGER trg_ValidateProjStatus
+ON dbo.Projekty
+INSTEAD OF INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM inserted
+        WHERE proj_status NOT IN ('nowy', 'w trakcie', 'zakończony pozytywnie', 'zakończony negatywnie')
+        OR proj_status IS NULL
+    )
+    BEGIN
+        RAISERROR ('Invalid value for proj_status. Allowed values are: nowy, w trakcie, zakończony pozytywnie, zakończony negatywnie.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END
+
+    INSERT INTO dbo.Projekty (proj_nazwa, proj_status)
+    SELECT proj_nazwa, proj_status
+    FROM inserted;
+END;
+GO
+
+INSERT INTO dbo.Projekty (proj_nazwa, proj_status)
+VALUES ('Projekt Valid', 'nowy'); --OK
+GO
+SELECT * FROM dbo.Projekty
+GO
+INSERT INTO dbo.Projekty (proj_nazwa, proj_status)
+VALUES ('Projekt Invalid', 'invalid_status'); -- bedzie fail
+GO
+
+UPDATE dbo.Projekty
+SET proj_status = 'zakończony pozytywnie'
+WHERE proj_id = 1;
+GO
+SELECT * FROM dbo.Projekty
+GO
+
+UPDATE dbo.Projekty
+SET proj_status = 'invalid_status'
+WHERE proj_id = 1; --bedzie fail
+
+
+
+
+/*Lab5_3.3.sql*/
+    DROP TABLE IF EXISTS dbo.Pracownicy
+    GO
+
+    CREATE TABLE dbo.Pracownicy (
+    prac_id INT PRIMARY KEY,
+    prac_imie VARCHAR(20),
+    prac_nazwisko VARCHAR(20),
+    prac_projekty VARCHAR(30)
+    );
+
+    GO
+    DROP TABLE IF EXISTS dbo.Projekty
+    GO
+    CREATE TABLE dbo.Projekty (
+    proj_id INT PRIMARY KEY IDENTITY,
+    proj_nazwa VARCHAR(20)
+    );
+    GO
+    INSERT INTO Pracownicy (prac_id, prac_imie, prac_nazwisko,
+    prac_projekty)
+    VALUES
+    (1, 'Anna', 'Kowalska', '1,23,34,21,24,56,68'),
+    (7, 'Jan', 'Nowak', '2,67'),
+    (12, 'Maria', 'Wiśniewska', '73,87,88,91'),
+    (40, 'Tomasz', 'Zieliński', '34,56,56,67,98'),
+    (41, 'Katarzyna', 'Szymańska', '3'),
+    (45, 'Michał', 'Woźniak', null),
+    (71, 'Agnieszka', 'Krawczyk', '89,13,76,2'),
+    (83, 'Piotr', 'Wójcik', '23,44,77,12'),
+    (84, 'Magdalena', 'Nowicka', '8,88'),
+    (85, 'Adam', 'Jankowski', '37,78,90');
+
+    GO
+
+    DECLARE @i INT = 1;
+    WHILE @i <= 100
+    BEGIN
+    INSERT INTO dbo.Projekty (proj_nazwa)
+    VALUES ('Projekt ' + CAST(@i AS VARCHAR(10)));
+    SET @i = @i + 1;
+    END;
+GO
+
+ALTER TABLE dbo.Projekty
+ADD proj_status VARCHAR(30);
+GO
+UPDATE dbo.Projekty
+SET proj_status = 'nowy'
+WHERE proj_id <= 25;
+
+UPDATE dbo.Projekty
+SET proj_status = 'w trakcie'
+WHERE proj_id > 25 AND proj_id <= 50;
+
+UPDATE dbo.Projekty
+SET proj_status = 'zakończony pozytywnie'
+WHERE proj_id > 50 AND proj_id <= 75;
+
+UPDATE dbo.Projekty
+SET proj_status = 'zakończony negatywnie'
+WHERE proj_id > 75;
+
+GO
+DROP TABLE IF EXISTS dbo.DictionaryValues;
+
+CREATE TABLE dbo.DictionaryValues (
+    dict_id INT PRIMARY KEY IDENTITY,
+    dict_type VARCHAR(50) NOT NULL,
+    dict_value VARCHAR(50) NOT NULL,
+    UNIQUE (dict_type, dict_value)
+);
+GO
+INSERT INTO dbo.DictionaryValues (dict_type, dict_value)
+VALUES
+('proj_status', 'nowy'),
+('proj_status', 'w trakcie'),
+('proj_status', 'zakończony pozytywnie'),
+('proj_status', 'zakończony negatywnie');
+go
+ALTER TABLE dbo.Projekty
+ADD proj_status_id INT;
+
+ALTER TABLE dbo.Projekty
+ADD CONSTRAINT fk_proj_status FOREIGN KEY (proj_status_id)
+REFERENCES dbo.DictionaryValues(dict_id);
+go
+
+go
+UPDATE p
+SET proj_status_id = d.dict_id
+FROM dbo.Projekty p
+JOIN dbo.DictionaryValues d
+ON d.dict_type = 'proj_status' AND d.dict_value = p.proj_status;
+go
+
+ALTER TABLE dbo.Projekty DROP COLUMN proj_status;
+go
+INSERT INTO dbo.DictionaryValues (dict_type, dict_value)
+VALUES ('proj_status', 'archiwalny');
+go
+SELECT
+    p.proj_id,
+    p.proj_nazwa,
+    d.dict_value AS proj_status
+FROM dbo.Projekty p
+LEFT JOIN dbo.DictionaryValues d
+ON p.proj_status_id = d.dict_id;
+GO
+
+INSERT INTO dbo.DictionaryValues (dict_type, dict_value)
+VALUES
+('proj_budzet', 'lokalny'),
+('proj_budzet', 'centralny');
+go
+ALTER TABLE dbo.Projekty
+ADD proj_budzet_id INT;
+
+ALTER TABLE dbo.Projekty
+ADD CONSTRAINT fk_proj_budzet FOREIGN KEY (proj_budzet_id)
+REFERENCES dbo.DictionaryValues(dict_id);
+
+
+
+
+/*Lab5_4.1.sql*/
+    DROP TABLE IF EXISTS dbo.Projekty
+    GO
+    CREATE TABLE dbo.Projekty (
+    proj_id INT PRIMARY KEY IDENTITY,
+    proj_nazwa VARCHAR(20)
+    );
+
+
+GO
+
+ALTER TABLE dbo.Projekty ADD proj_umowa_plik VARBINARY(MAX);
+
+GO
+SELECT * FROM dbo.Projekty
+
+INSERT INTO dbo.Projekty (proj_nazwa, proj_umowa_plik)
+SELECT 'Projekt Delta', *
+FROM OPENROWSET(BULK '/var/opt/mssql/data/output.png', SINGLE_BLOB) rs;
+go
+insert  into dbo.Projekty (proj_nazwa)
+VALUES('Project Alpha')
+GO
+
+DROP PROC IF EXISTS dbo.usp_LoadProjectImage
+
+GO
+CREATE PROC dbo.usp_LoadProjectImage
+    @Path NVARCHAR(MAX),
+    @ProjectName NVARCHAR(20)
+AS
+BEGIN
+    DECLARE @SQL NVARCHAR(MAX)
+
+    DECLARE PathCursor CURSOR FOR
+    SELECT proj_nazwa
+    FROM dbo.Projekty
+    WHERE proj_umowa_plik IS NULL;
+
+    OPEN PathCursor
+    FETCH NEXT FROM PathCursor INTO @ProjectName
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        BEGIN TRY
+            SET @SQL = '
+                UPDATE dbo.Projekty
+                SET proj_umowa_plik = (SELECT * FROM OPENROWSET(BULK N''' + @Path + ''', SINGLE_BLOB) rs)
+                WHERE proj_nazwa = N''' + @ProjectName + ''';'
+            PRINT(@SQL)
+            EXEC sp_executesql @SQL
+        END TRY
+        BEGIN CATCH
+            PRINT 'Error processing file: ' + @Path
+        END CATCH
+
+        FETCH NEXT FROM PathCursor INTO @ProjectName
+    END
+
+    CLOSE PathCursor
+    DEALLOCATE PathCursor
+END
+GO
+
+
+EXEC dbo.usp_LoadProjectImage '/var/opt/mssql/data/output.png','Project Alpha'
+
+
+SELECT * FROM dbo.Projekty
+
+/*Lab5_4.2.py*/
+import pyodbc
+
+def export_binary_file(project_id, output_path):
+
+    conn = pyodbc.connect(
+        "DRIVER={ODBC Driver 17 for SQL Server};"
+        "SERVER=localhost,1433;"
+        "DATABASE=AdventureWorks2019;"
+        "UID=sa;"
+        "PWD=Password"
+    )
+    cursor = conn.cursor()
+
+
+    query = """
+    SELECT proj_umowa_plik
+    FROM dbo.Projekty
+    WHERE proj_id = ?
+    """
+    cursor.execute(query, project_id)
+    row = cursor.fetchone()
+
+    if row and row[0]:
+
+        with open(output_path, "wb") as file:
+            file.write(row[0])
+        print(f"File successfully saved to {output_path}")
+    else:
+        print("No binary data found for the specified project ID.")
+
+
+    cursor.close()
+    conn.close()
+
+project_id = 1  
+output_path = "file.png"  
+export_binary_file(project_id, output_path)
